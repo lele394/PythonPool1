@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 
 
 steps = 100000
-deltat = 0.01
+deltat = 0.1
 
 
 
 bh = e.object(0,0,0,0,10**10)
 
-proj = e.object(20, 0, 0, 0.01, 1000)
+proj = e.object(15, 0, 0, 0.011, 1000)
 
 
 #for proj
@@ -33,11 +33,11 @@ for val in r:
 
 
 
-
+"""
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 ax.plot(theta[:-1], r)
 plt.show()
-
+"""
 
 
 

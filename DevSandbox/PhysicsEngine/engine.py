@@ -181,7 +181,7 @@ def Leapfrog_integrator(object: object, blackhole: object, steps: int, l0: float
 
     for i in range(steps):
         r.append( rk_next(r[-1], v[-1], deltat) )
-        v.append( vk_next(v[-1], r[-1], blackhole.m, deltat, l0) )
+        v.append( vk_next(v[-1], r[-1], blackhole.m, l0, deltat) )
 
     return (r, v)
 
