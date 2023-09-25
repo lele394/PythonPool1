@@ -2,6 +2,40 @@ import physical_constants as pc
 from math import *
 
 
+
+class object:
+    def __init__(self, r, theta, vr, vtheta, m):
+        self.r = r
+        self.theta= theta
+        self.vr = vr
+        self.vtheta= vtheta
+        self.m = m
+    
+    def speed(self):
+        return (self.vr, self.vtheta)
+
+    def position(self):
+        return (self.r, self.theta)
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def escape_velocity(r: float, m_bh: float) -> float:
     """
     input :
@@ -108,7 +142,7 @@ def acceleration(m: float, r: float, l0: float):
         float
         acceleration
     """
-    return  - pc.G * m /r**2 + (r-3/2 * Schwarzschild_radius(m) ) * l0**2 / r**4
+    return  - pc.G * m /r**2 + (r-3/2) * l0**2 / r**4
 
 
 
@@ -143,7 +177,7 @@ def vk_next(vk: float, rk: float, mass: float, l0:float, deltat: float):
 def Leapfrog_integrator(object: object, blackhole: object, steps: int, l0: float, deltat: float):
 
     r = [object.r]
-    v = [object.vr]
+    v = [object.vr + acceleration(blackhole.m, r[0], l0)]
 
     for i in range(steps):
         r.append( rk_next(r[-1], v[-1], deltat) )
