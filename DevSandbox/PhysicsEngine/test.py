@@ -9,16 +9,20 @@ deltat = 0.01
 
 bh = e.object(0,0,0,0,10**10)
 
-proj = e.object(10, 0, 0, 0.02225, 10**4)
+# proj = e.object(10, 0, 0, 0.02225, 10**4)
 
 #for proj
-l0_proj = e.compute_l0(proj.r, proj.vtheta)
+# l0_proj = e.compute_l0(proj.r, proj.vtheta)
 
-
+ 
 
 proj1 = e.object(10, 0, 0, 0.02225, 10**4)
 proj2 = e.object(10, 0, -0.2, 0.02225, 10**4)
+proj3 = e.object(10, 0, -0.1, 0.02225, 10**4)
+proj4 = e.object(10, 0, -0.3, 0.03225, 10**4)
+proj5 = e.object(10, 0, 0.2, 0.02225, 10**4)
 
+projs = [proj1, proj4, proj2, proj3, proj5]
 
 
 
@@ -42,10 +46,10 @@ for val in r:
 
 
 #test using coupled integrators for 1 object
-values = e.coupled_integrator(proj, bh, steps, l0_proj, deltat)
+# values = e.coupled_integrator(proj, bh, steps, l0_proj, deltat)
 
-theta = values[1]
-r = values[0]
+# theta = values[1]
+# r = values[0]
 
 
 """
@@ -53,21 +57,33 @@ r = values[0]
 """
 
 
+objects = e.nbody_coupled_integrator(projs, bh, steps)
 
 
 
 
 
+"""
 
 
 
+ax.plot(theta, r)
+"""
+# * creates plot and add the black hole
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
-
 circle = plt.Circle((0, 0), 1, transform=ax.transData._b, color="red", alpha=0.4)
 ax.add_artist(circle)
 
-ax.plot(theta, r)
-plt.show()
 
+for object in objects:
+
+    theta = object[1]
+    r = object[0]
+
+    ax.plot(theta, r)
+
+
+
+plt.show()
 
 

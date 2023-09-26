@@ -285,36 +285,93 @@ def coupled_integrator(object: object,
 
 
 
-def nbody_coupled_integrator(object: object, 
+def nbody_coupled_integrator(objects: object, 
                        blackhole: object, 
                        steps: int, 
-                       l0: float, 
-                       deltat: float):
+                       ):
+    
 
-    theta = [object.theta]
+    finished_objects = []
 
 
-    #leapfrog
-    r = [object.r]
-    v = [object.vr + acceleration(blackhole.m, r[0], l0)]
 
+    #get a list of l0
+    l0s = [compute_l0(obj.r, obj.vtheta) for obj in objects]
+
+    #creates deltat variable
+    deltat = 0
+
+    #initialise theta list
+    theta_list = [[0, obj.theta] for obj in objects]
+    r_list = [[obj.r] for obj in objects]
+
+    v_list = [[objects[i].vr + acceleration(blackhole.m, r_list[i][0], l0s[i])]  
+              for i in range(len(objects))]
+
+
+    #for each step
     for i in range(steps):
+        print(i)
+        #get all last computed rs and vs
+        rs = [ item[-1] for item in r_list] 
+        vs = [ item[-1] for item in v_list]
 
-        #leapfrog
-        r.append( rk_next(r[-1], v[-1], deltat) )
-        v.append( vk_next(v[-1], r[-1], blackhole.m, l0, deltat) )
+        #print(rs)
+        #print(vs)
+        #print(thetas)
 
 
-        #theta
-        theta.append(theta_next(theta[-1], l0, r[-1], deltat))
+        #compute a deltat
+        deltat = ComputeDeltatT(rs, vs, theta_list)
+        #print(deltat)
+        #for each object do 1 step
+        for obj_index in range(len(objects)):
 
-        # ! NEEDS TO BE CHANGED WHEN USING MULTIPLE OBJECTS
-        deltat = ComputeDeltatT([r[-1]], [v[-1]], [theta])
+            # * stuff for r
+            r_list[obj_index].append( rk_next(r_list[obj_index][-1], v_list[obj_index][-1], deltat) )
+            v_list[obj_index].append( vk_next(v_list[obj_index][-1], r_list[obj_index][-1], blackhole.m, l0s[obj_index], deltat) )
 
-        #stop if under Rs
-        if r[-1] < 1 or r[-1] > 16:
-            # r.pop()
-            # theta.pop()
-            return(r, theta)
+            # * stuff for theta
+            theta_list[obj_index].append(theta_next(theta_list[obj_index][-1], l0s[obj_index], r_list[obj_index][-1], deltat))
 
-    return (r, theta)
+
+            # ~ escape condition
+            if r_list[obj_index][-1] < 1 or r_list[obj_index][-1] > 16:
+
+                print(f'object escape, remainin objects before pop : {len(objects)-1}')
+
+                # * packs and puts the finished object in the output list
+                finished_objects.append(
+                    (r_list[obj_index], theta_list[obj_index][1:]) #getting rid of the first element as it was added for computational purpose on the initialisation of theta_list
+                )
+
+                # * gets rid of the data in r, v and theta lists, and deletes the l0
+                theta_list.pop(obj_index)
+                r_list.pop(obj_index)
+                v_list.pop(obj_index)
+                l0s.pop(obj_index)
+                objects.pop(obj_index)
+
+                obj_index = obj_index -1 
+        
+  
+    while objects != []:
+        # * packs and puts the finished object in the output list
+        finished_objects.append(
+            (r_list[-1], theta_list[-1][1:]) #getting rid of the first element as it was added for computational purpose on the initialisation of theta_list
+        )
+
+        # * gets rid of the data in r, v and theta lists, and deletes the l0
+        theta_list.pop(-1)
+        r_list.pop(-1)
+        v_list.pop(-1)
+        l0s.pop(-1)
+        objects.pop(-1)
+
+
+
+
+
+
+
+    return finished_objects
