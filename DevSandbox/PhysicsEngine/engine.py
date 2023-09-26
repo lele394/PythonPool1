@@ -1,6 +1,8 @@
-import PhysicsEngine.physicalConstants as pc
+# import PhysicsEngine.physicalConstants as pc
+import physicalConstants as pc
 from math import *
 
+import config as conf
 
 
 class object:
@@ -21,7 +23,47 @@ class object:
 
 
 
+def clamp(num, min_value, max_value):
+   """clamp num between min and max"""
+   return max(min(num, max_value), min_value)
 
+def ComputeDeltatT(r: list[float], v: list[float], theta: list[float]):
+    """
+    input :
+        r : list[float]
+            list of all current r value for each objects
+        v : list[float]
+            list of all the current speed on r (rdot)
+        theta : list[list[float]]
+            list
+
+    return :
+        float
+        new minimum deltat that can be used in the simulation
+    """
+    # print(r,v)
+    mini = r[0]
+    count = 0
+    minivr = v[0]
+    theta = theta[0]
+    """
+    """
+    for radius in r: 
+        if radius<mini: 
+            mini=radius
+            miniv = v[count]
+        count += 1
+    # print(f'mini {mini}\nminiv {minivr}')
+
+
+
+    # sqrt(r.**2 + r*theta.**2)
+    v = sqrt( minivr ** 2 + (theta[-1] - (minivr ** 2) * theta[-2]) ** 2 )
+
+
+    deltat = (-1) * 2 * pc.pi * mini / (conf._computeDeltaDeltatFactor *v)
+    # print(f'deltat : {deltat}')
+    return clamp(abs(deltat), conf._computeDeltaClamp[0], conf._computeDeltaClamp[1])
 
 
 
@@ -195,5 +237,84 @@ def Leapfrog_integrator(object: object, blackhole: object, steps: int, l0: float
 
 
 
+def coupled_integrator(object: object, 
+                       blackhole: object, 
+                       steps: int, 
+                       l0: float, 
+                       deltat: float):
+
+    theta = [object.theta]
 
 
+    #leapfrog
+    r = [object.r]
+    v = [object.vr + acceleration(blackhole.m, r[0], l0)]
+
+    for i in range(steps):
+
+        #leapfrog
+        r.append( rk_next(r[-1], v[-1], deltat) )
+        v.append( vk_next(v[-1], r[-1], blackhole.m, l0, deltat) )
+
+
+        #theta
+        theta.append(theta_next(theta[-1], l0, r[-1], deltat))
+
+        # ! NEEDS TO BE CHANGED WHEN USING MULTIPLE OBJECTS
+        deltat = ComputeDeltatT([r[-1]], [v[-1]], [theta])
+
+        #stop if under Rs
+        if r[-1] < 1 or r[-1] > 16:
+            # r.pop()
+            # theta.pop()
+            return(r, theta)
+
+    return (r, theta)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def nbody_coupled_integrator(object: object, 
+                       blackhole: object, 
+                       steps: int, 
+                       l0: float, 
+                       deltat: float):
+
+    theta = [object.theta]
+
+
+    #leapfrog
+    r = [object.r]
+    v = [object.vr + acceleration(blackhole.m, r[0], l0)]
+
+    for i in range(steps):
+
+        #leapfrog
+        r.append( rk_next(r[-1], v[-1], deltat) )
+        v.append( vk_next(v[-1], r[-1], blackhole.m, l0, deltat) )
+
+
+        #theta
+        theta.append(theta_next(theta[-1], l0, r[-1], deltat))
+
+        # ! NEEDS TO BE CHANGED WHEN USING MULTIPLE OBJECTS
+        deltat = ComputeDeltatT([r[-1]], [v[-1]], [theta])
+
+        #stop if under Rs
+        if r[-1] < 1 or r[-1] > 16:
+            # r.pop()
+            # theta.pop()
+            return(r, theta)
+
+    return (r, theta)

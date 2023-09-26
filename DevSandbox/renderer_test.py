@@ -32,6 +32,9 @@ class App(mglw.WindowConfig):
 
         self.set_uniform('resolution', self.window_size)
 
+
+        #assign texture to channel 0
+        #self.prog['tex'] = 0
         
 
 
@@ -48,7 +51,9 @@ class App(mglw.WindowConfig):
         self.r = []
 
 
-        self.buffer = self.ctx.texture( (600,600), 4, dtype='f1')
+        self.fbo = self.ctx.framebuffer(
+            color_attachments=[self.ctx.texture((self.window_size), 4, dtype="f1")],
+        )
 
 
 
@@ -59,15 +64,17 @@ class App(mglw.WindowConfig):
         try:
             self.prog[u_name] = u_value
         except:
-            a=0
+            print(f'error at {u_name} = {u_value}')
 
 
 
     def render(self, time, frame_time):
         self.ctx.clear()
 
-        #self.prog[]
-        #self.buffer.use(1)
+        #https://discord.com/channels/550302843777712148/550303654402588672/1156002515742117888
+        #self.fbo.use()
+        #self.fbo.color_attachments[0].use()
+
 
         r = e.Leapfrog_integrator(self.proj, self.bh, 2, self.l0_proj, self.deltat)[0][-1]
         self.theta = e.theta_next(self.theta, self.l0_proj, r, self.deltat)
@@ -76,11 +83,12 @@ class App(mglw.WindowConfig):
         y = r*sin(self.theta)
 
         pos = (x*self.zoom,y*self.zoom)
-        print(pos)
+        #print(pos)
 
 
 
         self.set_uniform('position', pos)
+
         self.quad.render(self.prog)
 
 

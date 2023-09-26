@@ -1,10 +1,12 @@
-#version 430
+#version 330
 
 out vec4 fragColor;
 uniform vec2 resolution;
 uniform vec2 position;
 
-//uniform Sampler2D
+float fadeoff = 0.80;
+
+uniform sampler2D tex;
 
 //============================================================
 float circle(float radius, vec2 position)
@@ -21,6 +23,8 @@ void main() {
   float circleWidth = 1.0/600.0;
 
   float circle = circle(circleWidth, pixelCoord-position);
+
+  vec4 prevColor = texture2D(tex, pixelCoord);
 
   if ( circle == 0.0)
   {
