@@ -1,8 +1,9 @@
 import engine as e
 import matplotlib.pyplot as plt
+from math import sqrt
 
 
-steps = 1000000
+steps = 100000
 deltat = 0.01
 
 
@@ -16,13 +17,16 @@ bh = e.object(0,0,0,0,10**10)
 
  
 
-proj1 = e.object(10, 0, 0, 0.02225, 10**4)
-proj2 = e.object(10, 0, -0.2, 0.02225, 10**4)
-proj3 = e.object(10, 0, -0.1, 0.02225, 10**4)
-proj4 = e.object(10, 0, -0.3, 0.03225, 10**4)
-proj5 = e.object(10, 0, 0.2, 0.02225, 10**4)
 
-projs = [proj1, proj4, proj2, proj3, proj5]
+#? tryna make 2 circular orbit particles
+obj_r = 5
+circularspeed = 0.087
+
+
+projs = [
+    e.object(obj_r, 0, 0, circularspeed, 10**4, 1),
+    e.object(obj_r, 0, 0, -circularspeed, 10**4, 1)
+]
 
 
 

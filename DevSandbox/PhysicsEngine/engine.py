@@ -6,12 +6,19 @@ import config as conf
 
 
 class object:
-    def __init__(self, r, theta, vr, vtheta, m):
+    def __init__(self, 
+                 r: float, 
+                 theta: float, 
+                 vr:float, 
+                 vtheta: float, 
+                 m: float, 
+                 radius= 0):
         self.r = r
         self.theta= theta
         self.vr = vr
         self.vtheta= vtheta
         self.m = m
+        self.radius = radius
     
     def speed(self):
         return (self.vr, self.vtheta)
@@ -351,7 +358,7 @@ def nbody_coupled_integrator(objects: object,
             # ~ escape condition
             if r_list[obj_index][-1] < 1 or r_list[obj_index][-1] > 16:
 
-                print(f'object escape, remainin objects before pop : {len(objects)}, iteration number {i}')
+                print(f'object escape, remaining objects before pop : {len(objects)}, iteration number {i}')
 
                 # * packs and puts the finished object in the output list
                 finished_objects.append(
@@ -371,6 +378,7 @@ def nbody_coupled_integrator(objects: object,
             l0s.pop(obj_index)
             objects.pop(obj_index)
 
+    # * writes all remaining objects to the output list
     while objects != []:
         # * packs and puts the finished object in the output list
         finished_objects.append(
@@ -383,11 +391,5 @@ def nbody_coupled_integrator(objects: object,
         v_list.pop(-1)
         l0s.pop(-1)
         objects.pop(-1)
-
-
-
-
-
-
 
     return finished_objects
