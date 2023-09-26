@@ -309,9 +309,22 @@ def nbody_coupled_integrator(objects: object,
               for i in range(len(objects))]
 
 
+    objects_to_depop = []
     #for each step
     for i in range(steps):
-        print(i)
+
+
+
+
+        #resets depopulation indices
+        objects_to_depop = []
+
+
+
+        if len(objects) == 0:
+            break
+            
+        # print(i)
         #get all last computed rs and vs
         rs = [ item[-1] for item in r_list] 
         vs = [ item[-1] for item in v_list]
@@ -338,7 +351,7 @@ def nbody_coupled_integrator(objects: object,
             # ~ escape condition
             if r_list[obj_index][-1] < 1 or r_list[obj_index][-1] > 16:
 
-                print(f'object escape, remainin objects before pop : {len(objects)-1}')
+                print(f'object escape, remainin objects before pop : {len(objects)}, iteration number {i}')
 
                 # * packs and puts the finished object in the output list
                 finished_objects.append(
@@ -346,15 +359,18 @@ def nbody_coupled_integrator(objects: object,
                 )
 
                 # * gets rid of the data in r, v and theta lists, and deletes the l0
-                theta_list.pop(obj_index)
-                r_list.pop(obj_index)
-                v_list.pop(obj_index)
-                l0s.pop(obj_index)
-                objects.pop(obj_index)
+                objects_to_depop.append(obj_index)
 
-                obj_index = obj_index -1 
-        
-  
+
+        # * dels all specified objects to depop
+        objects_to_depop.reverse()
+        for obj_index in objects_to_depop:
+            theta_list.pop(obj_index)
+            r_list.pop(obj_index)
+            v_list.pop(obj_index)
+            l0s.pop(obj_index)
+            objects.pop(obj_index)
+
     while objects != []:
         # * packs and puts the finished object in the output list
         finished_objects.append(

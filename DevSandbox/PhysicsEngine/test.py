@@ -2,7 +2,7 @@ import engine as e
 import matplotlib.pyplot as plt
 
 
-steps = 100000
+steps = 1000000
 deltat = 0.01
 
 
@@ -23,6 +23,9 @@ proj4 = e.object(10, 0, -0.3, 0.03225, 10**4)
 proj5 = e.object(10, 0, 0.2, 0.02225, 10**4)
 
 projs = [proj1, proj4, proj2, proj3, proj5]
+
+
+
 
 
 
