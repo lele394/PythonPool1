@@ -19,6 +19,9 @@ class object:
         self.vtheta= vtheta
         self.m = m
         self.radius = radius
+
+        self.r_list = []
+        self.theta_list = []
     
     def speed(self):
         return (self.vr, self.vtheta)
@@ -34,7 +37,7 @@ def clamp(num, min_value, max_value):
    """clamp num between min and max"""
    return max(min(num, max_value), min_value)
 
-def ComputeDeltatT(r: list[float], v: list[float], theta: list[float]):
+def ComputeDeltatT(r: list[float], v: list[float], theta: list[float], prevdeltat: float):
     """
     input :
         r : list[float]
@@ -64,8 +67,8 @@ def ComputeDeltatT(r: list[float], v: list[float], theta: list[float]):
 
 
 
-    # sqrt(r.**2 + r*theta.**2)
-    v = sqrt( minivr ** 2 + (theta[-1] - (minivr ** 2) * theta[-2]) ** 2 )
+    # sqrt(r.**2 + r**2 * theta.**2)
+    v = sqrt( minivr ** 2 + (minivr ** 2) * (theta[-1] - theta[-2] ) ** 2 )
 
 
     deltat = (-1) * 2 * pc.pi * mini / (conf._computeDeltaDeltatFactor *v)
@@ -268,10 +271,10 @@ def coupled_integrator(object: object,
         theta.append(theta_next(theta[-1], l0, r[-1], deltat))
 
         # ! NEEDS TO BE CHANGED WHEN USING MULTIPLE OBJECTS
-        deltat = ComputeDeltatT([r[-1]], [v[-1]], [theta])
+        deltat = ComputeDeltatT([r[-1]], [v[-1]], [theta], deltat)
 
         #stop if under Rs
-        if r[-1] < 1 or r[-1] > 16:
+        if r_list[obj_index][-1] < conf._outOfBoundMin or r_list[obj_index][-1] > conf._outOfBoundMax:
             # r.pop()
             # theta.pop()
             return(r, theta)
@@ -332,9 +335,15 @@ def nbody_coupled_integrator(objects: object,
             break
             
         # print(i)
-        #get all last computed rs and vs
+        #get all last computed rs and vs (and thetas)
         rs = [ item[-1] for item in r_list] 
         vs = [ item[-1] for item in v_list]
+        thetas = [ item[-1] for item in theta_list]
+
+        col = DetectCollisions(rs, thetas, objects)
+        if col != []:
+            print(f'collisions on iteration {i} for objects {col}')
+            
 
         #print(rs)
         #print(vs)
@@ -342,7 +351,7 @@ def nbody_coupled_integrator(objects: object,
 
 
         #compute a deltat
-        deltat = ComputeDeltatT(rs, vs, theta_list)
+        deltat = ComputeDeltatT(rs, vs, theta_list, deltat)
         #print(deltat)
         #for each object do 1 step
         for obj_index in range(len(objects)):
@@ -356,14 +365,18 @@ def nbody_coupled_integrator(objects: object,
 
 
             # ~ escape condition
-            if r_list[obj_index][-1] < 1 or r_list[obj_index][-1] > 16:
+            if r_list[obj_index][-1] < conf._outOfBoundMin or r_list[obj_index][-1] > conf._outOfBoundMax:
 
                 print(f'object escape, remaining objects before pop : {len(objects)}, iteration number {i}')
 
                 # * packs and puts the finished object in the output list
-                finished_objects.append(
-                    (r_list[obj_index], theta_list[obj_index][1:]) #getting rid of the first element as it was added for computational purpose on the initialisation of theta_list
-                )
+                # finished_objects.append(
+                #     (r_list[obj_index], theta_list[obj_index][1:]) #getting rid of the first element as it was added for computational purpose on the initialisation of theta_list
+                # )
+                objects[obj_index].r_list = list(r_list[obj_index])
+                objects[obj_index].theta_list = list(theta_list[obj_index][1:])
+
+                finished_objects.append(objects[obj_index])
 
                 # * gets rid of the data in r, v and theta lists, and deletes the l0
                 objects_to_depop.append(obj_index)
@@ -381,9 +394,15 @@ def nbody_coupled_integrator(objects: object,
     # * writes all remaining objects to the output list
     while objects != []:
         # * packs and puts the finished object in the output list
-        finished_objects.append(
-            (r_list[-1], theta_list[-1][1:]) #getting rid of the first element as it was added for computational purpose on the initialisation of theta_list
-        )
+        # finished_objects.append(
+        #     (r_list[-1], theta_list[-1][1:]) #getting rid of the first element as it was added for computational purpose on the initialisation of theta_list
+        # )
+
+        objects[-1].r_list = list(r_list[-1])
+        objects[-1].theta_list = list(theta_list[-1][1:])
+
+        finished_objects.append(objects[-1])
+
 
         # * gets rid of the data in r, v and theta lists, and deletes the l0
         theta_list.pop(-1)
@@ -393,3 +412,69 @@ def nbody_coupled_integrator(objects: object,
         objects.pop(-1)
 
     return finished_objects
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ! collision stuff
+
+def DetectCollisions(r: list[float], theta: list[float], objects: list[object]): 
+    """
+    input :
+        r : list[float]
+            contains positions of the particles for r
+        theta : list[float]
+            contains the position of the particles for theta
+
+    return:
+        list[(int, int)]
+        pairs of int corresponding to both objects in a collision
+    """
+
+    
+
+    collisions = [] #will get all the pair of colliding objects 
+
+    master = [ (r[i], theta[i]) for i in range(len(r)) ]
+
+    # check for each particles
+    for point in range(len(master)):
+        # ! is that even supposed to work?
+        rad1 = objects[point].radius
+        r1 = master[point][0]
+        theta1 = master[point][1]
+        #check for particles of indices n-1
+        for neighbor in range(point+1, len(master)):
+            # ! is that even supposed to work?
+            rad2 = objects[neighbor].radius
+            r2 = master[neighbor][0]
+            theta2 = master[neighbor][1]
+
+            # print(f'rad1 {rad1}, rad2 {rad2}')
+            a = r1**2 +r2**2 - 2 * r1 * r2 * cos(theta2-theta1)
+            d = sqrt( abs(a))
+            #print(d)
+
+            #get distance between 2 points
+
+            if d < (rad1 + rad2):
+                collisions.append( (point, neighbor) )
+    
+    return collisions

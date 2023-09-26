@@ -18,14 +18,10 @@ bh = e.object(0,0,0,0,10**10)
  
 
 
-#? tryna make 2 circular orbit particles
-obj_r = 5
-circularspeed = 0.087
-
 
 projs = [
-    e.object(obj_r, 0, 0, circularspeed, 10**4, 1),
-    e.object(obj_r, 0, 0, -circularspeed, 10**4, 1)
+    e.object(7, 0, 0, -0.041, 10**4, 0.05),
+    e.object(7, 0, 0, 0.041, 10**4, 0.05)
 ]
 
 
@@ -82,10 +78,11 @@ circle = plt.Circle((0, 0), 1, transform=ax.transData._b, color="red", alpha=0.4
 ax.add_artist(circle)
 
 
+
 for object in objects:
 
-    theta = object[1]
-    r = object[0]
+    theta = object.theta_list
+    r = object.r_list
 
     ax.plot(theta, r)
 
