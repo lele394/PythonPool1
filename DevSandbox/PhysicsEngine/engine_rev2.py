@@ -29,6 +29,13 @@ class object:
         self.theta_list = [ theta]
         self.v_list = [vr]
 
+        self.IsOut = False# if true, means the object is out of the simulation
+
+    def UpdateVariables(self, last_deltat):
+        self.r = self.r_list[-1]
+        self.theta = self.theta_list[-1]
+        self.vr = self.v_list[-1]
+        self.vtheta = self.GetTheta_p(last_deltat)
     
     def speed(self):
         return (self.vr, self.vtheta)
@@ -90,36 +97,6 @@ def ComputeDeltatT(objects: list[object], prevdeltat: float):
     return min(dt_list)
 
 
-
-
-
-
-    """
-    # print(r,v)
-    mini = r[0]
-    count = 0
-    minivr = v[0]
-    theta = theta[0]
-    """
-    """
-    for radius in r: 
-        if radius<mini: 
-            mini=radius
-            miniv = v[count]
-        count += 1
-    # print(f'mini {mini}\nminiv {minivr}')
-
-
-    print(prevdeltat)
-    # sqrt(r.**2 + r**2 * theta.**2)
-    v = sqrt( minivr ** 2 + (minivr ** 2) * (theta[-1] - theta[-2]  / prevdeltat) ** 2 )
-
-
-    deltat =  2 * pc.pi * mini / (conf._computeDeltaDeltatFactor *v)
-    # print(f'deltat : {deltat}')
-    return clamp(abs(deltat), conf._computeDeltaClamp[0], conf._computeDeltaClamp[1])
-
-    """
 
 
 
@@ -225,15 +202,9 @@ def nbody_coupled_integrator(objects: list[object],
     objects_to_depop = []
 
 
-
-    #get a list of l0
-    #l0s = [compute_l0(obj.r, obj.vtheta) for obj in objects]
-
     #creates deltat variable
     deltat = initialDeltat
 
-    #initialise theta list
-    # theta_list = [[0, obj.theta] for obj in objects]
 
 
 
@@ -280,7 +251,7 @@ def nbody_coupled_integrator(objects: list[object],
             print(f'collisions on iteration {i} for objects {col}')
         
         for pair in col:
-            update_colliding_objects(pair, objects, deltat )
+            update_colliding_objects(pair, objects, deltat)
         """
         """
 
@@ -300,17 +271,12 @@ def nbody_coupled_integrator(objects: list[object],
             obj.theta_list.append(theta_next(obj.theta_list[-1], obj.l0, obj.r_list[-1], deltat))
 
 
-            # * updates lists of objects with new one
-            # ! innefecient as FUCK, udate to just add the last value cuz holy shit that must slow down this bitch so bad
- 
-
-
 
             # ~ escape conditions
             if obj.r_list[-1] < conf._outOfBoundMin or obj.r_list[-1] > conf._outOfBoundMax:
 
-                if obj.r_list[-1] < conf._outOfBoundMin: print(f'object fell in blackhole, remaining objects before pop : {len(objects)}, iteration number {i}')
-                if obj.r_list[-1] > conf._outOfBoundMax: print(f'object escape, remaining objects before pop : {len(objects)}, iteration number {i}')
+                if obj.r_list[-1] < conf._outOfBoundMin: print(f'object fell in blackhole, remaining objects before pop : {len(objects)}, iteration number {i}'); obj.IsOut = True
+                if obj.r_list[-1] > conf._outOfBoundMax: print(f'object escape, remaining objects before pop : {len(objects)}, iteration number {i}'); obj.IsOut = True
 
                 finished_objects.append(obj)
 
@@ -324,8 +290,8 @@ def nbody_coupled_integrator(objects: list[object],
 
     # * writes all remaining objects to the output list
 
-
-    return finished_objects + objects
+    return (finished_objects + objects, deltat)
+    #                                   ^ deltat is returned cuz needed to initiate nextstep
 
 
 
@@ -403,11 +369,33 @@ def DetectCollisions(r: list[float], theta: list[float], objects: list[object]):
 
 
 
-def update_colliding_objects(pair: (int, int), objects: list[object],  deltat):
+def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: float):
     
     a = objects[pair[0]]
     b = objects[pair[1]]
 
+    atheta_p = (a.theta_list[-1] - a.theta_list[-2]) / deltat
+    btheta_p = (b.theta_list[-1] - b.theta_list[-2]) / deltat
+
+    # * calculate the final velocities in polar coordinates
+    a.v_list.append(((a.m-b.m)*a.v_list[-1]+2*b.m*b.v_list[-1])/(a.m+b.m))
+    b.v_list.append(((b.m-a.m)*b.v_list[-1]+2*a.m*a.v_list[-1])/(a.m+b.m))
+
+    # * calculate the final angles
+    a.theta_list.append(((a.m-b.m)*a.r_list[-1]*atheta_p+2*b.m*b.r_list[-1]*btheta_p)/((a.m+b.m)*a.r_list[-1]) * deltat)
+    b.theta_list.append(((b.m-a.m)*b.r_list[-1]*btheta_p-2*a.m*a.r_list[-1]*atheta_p)/((b.m+a.m)*b.r_list[-1]) * deltat)
+
+    # * add position
+    a.r_list.append(a.v_list[-1] * deltat)
+    b.r_list.append(b.v_list[-1] * deltat)
+
+    # print('=========================')
+    # print(a.theta_list[-1])
+    # print(b.theta_list[-1])
+    # print(a.r_list[-1])
+    # print(b.r_list[-1])
+
+    """
     ia = pair[0]
     ib = pair[0]
 
@@ -438,7 +426,7 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat):
     a.theta_list.append(atheta_p*deltat)
     b.theta_list.append(btheta_p*deltat)
 
-
+    """
     """
     # ! made in Trigui
     # Calculate the final velocities in polar coordinates
