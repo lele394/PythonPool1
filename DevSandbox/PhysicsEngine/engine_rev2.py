@@ -23,14 +23,29 @@ class object:
         self.m = m
         self.radius = radius
 
+        self.l0 = compute_l0(self.r, vtheta)
+
         self.r_list = [r]
-        self.theta_list = [theta]
+        self.theta_list = [ theta]
+        self.v_list = [vr]
+
     
     def speed(self):
         return (self.vr, self.vtheta)
 
     def position(self):
         return (self.r, self.theta)
+    
+    def GetR(self):
+        return self.r_list[-1]
+
+    def GetTheta(self):
+        return self.theta_list[-1]
+    
+    def GetTheta_p(self, deltat):
+        return (self.theta_list[-1] - self.theta_list[-2]) / deltat
+    
+
    
 
 
@@ -108,69 +123,6 @@ def ComputeDeltatT(objects: list[object], prevdeltat: float):
 
 
 
-
-
-
-
-
-
-
-
-
-def escape_velocity(r: float, m_bh: float) -> float:
-    """
-    input :
-        r : float
-            distance r from the black hole
-        
-        m_bh : float
-            masses of the black hole
-    return :
-        float escape velocity
-
-
-    return escape velocity based on sqrt(2*g*m_bh / r)
-    """
-
-    return sqrt( 2 * pc.G * m_bh / r)
-
-
-
-
-
-
-def Schwarzschild_radius(m_bh: float) -> float:
-    """
-    input :
-        m_bh : float
-            mass of the blackhole
-
-    return :
-        float
-        scharzschild radius of object
-    """
-
-    return (2 * pc.G * m_bh) / (pc.c* pc.c)
-
-
-
-
-
-def gravitational_force(r: float, m_bh: float, m: float) -> float:
-    """
-    input:
-        r : float
-            distance between the two objects
-        m_bh : float
-            mass of the black hole
-        m : float
-            mass of the orbiting object 
-
-        return :
-            gravitational attraction between both objects
-    """
-
-    return (- ( pc.G * m_bh) / r**2) * m
 
 
 
@@ -255,68 +207,6 @@ def vk_next(vk: float, rk: float, mass: float, l0:float, deltat: float):
     return vk + acceleration(mass, rk, l0) * deltat
 
 
-def Leapfrog_integrator(object: object, blackhole: object, steps: int, l0: float, deltat: float):
-
-    r = [object.r]
-    v = [object.vr + acceleration(blackhole.m, r[0], l0)]
-
-    for i in range(steps):
-        r.append( rk_next(r[-1], v[-1], deltat) )
-        v.append( vk_next(v[-1], r[-1], blackhole.m, l0, deltat) )
-
-    return (r, v)
-
-
-
-
-
-
-
-
-
-
-
-def coupled_integrator(object: object, 
-                       blackhole: object, 
-                       steps: int, 
-                       l0: float, 
-                       deltat: float):
-
-    theta = [object.theta]
-
-
-    #leapfrog
-    r = [object.r]
-    v = [object.vr + acceleration(blackhole.m, r[0], l0)]
-
-    for i in range(steps):
-
-        #leapfrog
-        r.append( rk_next(r[-1], v[-1], deltat) )
-        v.append( vk_next(v[-1], r[-1], blackhole.m, l0, deltat) )
-
-
-        #theta
-        theta.append(theta_next(theta[-1], l0, r[-1], deltat))
-
-        # ! NEEDS TO BE CHANGED WHEN USING MULTIPLE OBJECTS
-        deltat = ComputeDeltatT([r[-1]], [v[-1]], [theta], deltat)
-
-        #stop if under Rs
-        if r_list[obj_index][-1] < conf._outOfBoundMin or r_list[obj_index][-1] > conf._outOfBoundMax:
-            # r.pop()
-            # theta.pop()
-            return(r, theta)
-
-    return (r, theta)
-
-
-
-
-
-
-
-
 
 
 
@@ -332,6 +222,7 @@ def nbody_coupled_integrator(objects: list[object],
     
 
     finished_objects = []
+    objects_to_depop = []
 
 
 
@@ -342,17 +233,19 @@ def nbody_coupled_integrator(objects: list[object],
     deltat = initialDeltat
 
     #initialise theta list
-    theta_list = [[0, obj.theta] for obj in objects]
-    r_list = [[obj.r] for obj in objects]
-
-    v_list = [[objects[i].vr + acceleration(blackhole.m, r_list[i][0], l0s[i])]  
-              for i in range(len(objects))]
+    # theta_list = [[0, obj.theta] for obj in objects]
 
 
-    objects_to_depop = []
-    #for each step
+
+
+    #initialize v_list?
+    for obj in objects:
+        obj.v_list = [obj.vr + acceleration(blackhole.m, obj.r_list[0], obj.l0)]
+
+
 
     rem_time = datetime.now()
+    #for each step
     for i in range(steps):
 
         # ~ just to print simulation steps and infos
@@ -372,10 +265,15 @@ def nbody_coupled_integrator(objects: list[object],
             break
             
         #get all last computed rs and vs (and thetas)
-        rs = [ item[-1] for item in r_list] 
-        vs = [ item[-1] for item in v_list]
-        thetas = [ item[-1] for item in theta_list]
+        rs = [] 
+        thetas = []
+        for obj in objects:
+            rs.append(obj.r_list[-1])
+            thetas.append(obj.theta_list[-1])
 
+
+
+        """
         # ~ Collision stuff hereeee
         if i < conf._collisionGracePeriod: col = []
         else: col = DetectCollisions(rs, thetas, objects)
@@ -384,7 +282,7 @@ def nbody_coupled_integrator(objects: list[object],
         
         for pair in col:
             update_colliding_objects(pair, objects, r_list, v_list, theta_list, l0s, deltat )
-            
+        """
 
        
 
@@ -392,58 +290,43 @@ def nbody_coupled_integrator(objects: list[object],
         #compute a deltat
         if i!=0 : deltat = ComputeDeltatT(objects, deltat)#do not run on first iteration, need to use deltat passed
         #for each object do 1 step
-        for obj_index in range(len(objects)):
+        for obj in objects:
 
-            # * stuff for r | uses r_list, v_list, deltat, l0s
-            r_list[obj_index].append( rk_next(r_list[obj_index][-1], v_list[obj_index][-1], deltat) )
-            v_list[obj_index].append( vk_next(v_list[obj_index][-1], r_list[obj_index][-1], blackhole.m, l0s[obj_index], deltat) )
+            # * stuff for r 
+            obj.r_list.append( rk_next(obj.r_list[-1], obj.v_list[-1], deltat) )
+            obj.v_list.append( vk_next(obj.v_list[-1], obj.r_list[-1], blackhole.m, obj.l0, deltat) )
 
-            # * stuff for theta | uses theta_list, l0s, r_list
-            theta_list[obj_index].append(theta_next(theta_list[obj_index][-1], l0s[obj_index], r_list[obj_index][-1], deltat))
+            # * stuff for theta 
+            obj.theta_list.append(theta_next(obj.theta_list[-1], obj.l0, obj.r_list[-1], deltat))
+            print(len(obj.theta_list))
 
 
             # * updates lists of objects with new one
             # ! innefecient as FUCK, udate to just add the last value cuz holy shit that must slow down this bitch so bad
-            objects[obj_index].r_list = list(r_list[obj_index])
-            objects[obj_index].theta_list = list(theta_list[obj_index][1:])
+ 
 
 
 
             # ~ escape conditions
-            if r_list[obj_index][-1] < conf._outOfBoundMin or r_list[obj_index][-1] > conf._outOfBoundMax:
+            if obj.r_list[-1] < conf._outOfBoundMin or obj.r_list[-1] > conf._outOfBoundMax:
 
-                if r_list[obj_index][-1] < conf._outOfBoundMin: print(f'object fell in blackhole, remaining objects before pop : {len(objects)}, iteration number {i}')
-                if r_list[obj_index][-1] > conf._outOfBoundMax: print(f'object escape, remaining objects before pop : {len(objects)}, iteration number {i}')
+                if obj.r_list[-1] < conf._outOfBoundMin: print(f'object fell in blackhole, remaining objects before pop : {len(objects)}, iteration number {i}')
+                if obj.r_list[-1] > conf._outOfBoundMax: print(f'object escape, remaining objects before pop : {len(objects)}, iteration number {i}')
 
-                finished_objects.append(objects[obj_index])
+                finished_objects.append(obj)
 
                 # * gets rid of the data in r, v and theta lists, and deletes the l0
-                objects_to_depop.append(obj_index)
+                objects_to_depop.append(obj)
 
 
         # * dels all specified objects to depop
-        objects_to_depop.reverse()
-        for obj_index in objects_to_depop:
-            theta_list.pop(obj_index)
-            r_list.pop(obj_index)
-            v_list.pop(obj_index)
-            l0s.pop(obj_index)
-            objects.pop(obj_index)
+        for obj_to_remove in objects_to_depop:
+            objects.remove(obj_to_remove)
 
     # * writes all remaining objects to the output list
-    while objects != []:
-
-        finished_objects.append(objects[-1])
 
 
-        # * gets rid of the data in r, v and theta lists, and deletes the l0
-        theta_list.pop(-1)
-        r_list.pop(-1)
-        v_list.pop(-1)
-        l0s.pop(-1)
-        objects.pop(-1)
-
-    return finished_objects
+    return finished_objects + objects
 
 
 

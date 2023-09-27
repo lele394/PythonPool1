@@ -1,4 +1,4 @@
-import engine as e
+import engine_rev2 as e
 import matplotlib.pyplot as plt
 from math import sqrt
 
@@ -24,6 +24,7 @@ projs = [
 
 objects = e.nbody_coupled_integrator(projs, bh, steps, deltat)
 
+print(objects)
 
 
 # * creates plot and add the black hole
@@ -31,14 +32,27 @@ fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 circle = plt.Circle((0, 0), 1, transform=ax.transData._b, color="red", alpha=0.4)
 ax.add_artist(circle)
 
-
-
+""" # ! use for engine.py not engine_2.py
 for object in objects:
 
     theta = object.theta_list
     r = object.r_list
 
     ax.plot(theta, r)
+    # ax.plot(theta, r, linestyle="", marker="o")
+"""
+
+# ! use for engine_2.py
+for object in objects:
+
+    theta = object.theta_list
+    r = object.r_list
+
+    print(len(theta))
+    print(len(r))
+
+    ax.plot(theta, r)
+    # ax.plot(theta, r, linestyle="", marker="o")
 
 
 
