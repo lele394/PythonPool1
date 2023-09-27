@@ -227,7 +227,7 @@ def nbody_coupled_integrator(objects: list[object],
 
 
     #get a list of l0
-    l0s = [compute_l0(obj.r, obj.vtheta) for obj in objects]
+    #l0s = [compute_l0(obj.r, obj.vtheta) for obj in objects]
 
     #creates deltat variable
     deltat = initialDeltat
@@ -249,7 +249,7 @@ def nbody_coupled_integrator(objects: list[object],
     for i in range(steps):
 
         # ~ just to print simulation steps and infos
-        if i %300 == 0:
+        if i %conf._statusPrintModulo == 0:
             print(f' {int(i/steps * 100)} % \t current deltat : {deltat:.5f} \t step time : {(datetime.now() - rem_time)} \t estimated remaining time : {(datetime.now() - rem_time) * (steps-i)}')
         rem_time = datetime.now()
 
@@ -273,7 +273,6 @@ def nbody_coupled_integrator(objects: list[object],
 
 
 
-        """
         # ~ Collision stuff hereeee
         if i < conf._collisionGracePeriod: col = []
         else: col = DetectCollisions(rs, thetas, objects)
@@ -281,7 +280,8 @@ def nbody_coupled_integrator(objects: list[object],
             print(f'collisions on iteration {i} for objects {col}')
         
         for pair in col:
-            update_colliding_objects(pair, objects, r_list, v_list, theta_list, l0s, deltat )
+            update_colliding_objects(pair, objects, deltat )
+        """
         """
 
        
@@ -298,7 +298,6 @@ def nbody_coupled_integrator(objects: list[object],
 
             # * stuff for theta 
             obj.theta_list.append(theta_next(obj.theta_list[-1], obj.l0, obj.r_list[-1], deltat))
-            print(len(obj.theta_list))
 
 
             # * updates lists of objects with new one
@@ -404,7 +403,7 @@ def DetectCollisions(r: list[float], theta: list[float], objects: list[object]):
 
 
 
-def update_colliding_objects(pair: (int, int), objects: list[object], r_list, v_list, theta_list, l0s, deltat):
+def update_colliding_objects(pair: (int, int), objects: list[object],  deltat):
     
     a = objects[pair[0]]
     b = objects[pair[1]]
@@ -412,32 +411,32 @@ def update_colliding_objects(pair: (int, int), objects: list[object], r_list, v_
     ia = pair[0]
     ib = pair[0]
 
-    atheta_p = (theta_list[ia][-1] - theta_list[ia][-2]) / deltat
-    btheta_p = (theta_list[ib][-1] - theta_list[ib][-2]) / deltat
+    atheta_p = (a.theta_list[-1] - a.theta_list[-2]) / deltat
+    btheta_p = (b.theta_list[-1] - b.theta_list[-2]) / deltat
 
-    ar = r_list[ia][-1]
-    br = r_list[ib][-1]
+    ar = a.r_list[-1]
+    br = b.r_list[-1]
 
-    ar_p = v_list[ia][-1]
-    br_p = v_list[ib][-1]
+    ar_p = a.v_list[-1]
+    br_p = b.v_list[-1]
 
 
     #1
-    v_list[ia].append(((a.m - b.m) * ar_p + 2*b.m* br_p) / (a.m+b.m))
-    v_list[ib].append(((b.m - a.m) * br_p + 2*a.m* ar_p) / (a.m+b.m) )
+    a.v_list.append(((a.m - b.m) * ar_p + 2*b.m* br_p) / (a.m+b.m))
+    b.v_list.append(((b.m - a.m) * br_p + 2*a.m* ar_p) / (a.m+b.m) )
 
-    r_list[ia].append(v_list[ia][-1]*deltat)
-    r_list[ib].append(v_list[ib][-1]*deltat)
+    a.r_list.append(a.v_list[-1]*deltat)
+    b.r_list.append(b.v_list[-1]*deltat)
 
-    ar = r_list[ia][-1]
-    br = r_list[ib][-1]
+    ar = a.r_list[-1]
+    br = b.r_list[-1]
 
     #2
     atheta_p = ((a.m-b.m)*ar *atheta_p +2*b.m *br *btheta_p)/((a.m+b.m)*ar)
     btheta_p = ((b.m-a.m)*br *btheta_p -2*a.m *ar *atheta_p)/((b.m+a.m)*br)
 
-    theta_list[ia].append(atheta_p*deltat)
-    theta_list[ib].append(btheta_p*deltat)
+    a.theta_list.append(atheta_p*deltat)
+    b.theta_list.append(btheta_p*deltat)
 
 
     """
@@ -452,13 +451,6 @@ def update_colliding_objects(pair: (int, int), objects: list[object], r_list, v_
     b.theta_p.append(((b.mass-a.mass)*b.r[-1]*b.theta_p[-1]-2*a.mass*a.r[-1]*a.theta_p[-1])/((b.mass+a.mass)*b.r[-1]))
     """
 
-
-
-    # r_list[pair[0]].append(vr1_final * deltat + r_list[pair[0]][-1])
-    # r_list[pair[1]].append(vr2_final * deltat + r_list[pair[1]][-1])
-    
-    # theta_list[pair[0]].append(vtheta1_final * deltat + theta_list[pair[0]][-1])
-    # theta_list[pair[1]].append(vtheta2_final * deltat + theta_list[pair[1]][-1])
     return
 
 
