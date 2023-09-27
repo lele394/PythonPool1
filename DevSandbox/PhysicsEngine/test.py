@@ -22,7 +22,7 @@ projs = [
 
 
 
-objects = e.nbody_coupled_integrator(projs, bh, steps, deltat, update_graph, (fig, master_curve))
+objects = e.nbody_coupled_integrator(projs, bh, steps, deltat)
 
 
 
