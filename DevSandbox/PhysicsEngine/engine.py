@@ -1,6 +1,9 @@
 # import PhysicsEngine.physicalConstants as pc
 import physicalConstants as pc
 from math import *
+from datetime import datetime
+
+
 
 import config as conf
 
@@ -20,8 +23,8 @@ class object:
         self.m = m
         self.radius = radius
 
-        self.r_list = []
-        self.theta_list = []
+        self.r_list = [r]
+        self.theta_list = [theta]
     
     def speed(self):
         return (self.vr, self.vtheta)
@@ -37,7 +40,9 @@ def clamp(num, min_value, max_value):
    """clamp num between min and max"""
    return max(min(num, max_value), min_value)
 
-def ComputeDeltatT(r: list[float], v: list[float], theta: list[float], prevdeltat: float):
+# def ComputeDeltatT(r: list[float], v: list[float], theta: list[float], prevdeltat: float):*
+def ComputeDeltatT(objects: list[object], prevdeltat: float):
+
     """
     input :
         r : list[float]
@@ -50,6 +55,30 @@ def ComputeDeltatT(r: list[float], v: list[float], theta: list[float], prevdelta
     return :
         float
         new minimum deltat that can be used in the simulation
+    """
+    v=0
+    dt_list = []
+    for object in objects:
+
+
+        v = sqrt(
+            ((object.r_list[-1] - object.r_list[-1])/prevdeltat) ** 2 
+            + 
+            object.r_list[-1]**2 * ((object.theta_list[-1] - object.theta_list[-2])/prevdeltat)**2)
+
+
+        dt = 2 * pc.pi * object.r_list[-1] / (conf._computeDeltaDeltatFactor * v)
+
+        dt_list.append(dt)
+
+
+    return min(dt_list)
+
+
+
+
+
+
     """
     # print(r,v)
     mini = r[0]
@@ -66,16 +95,16 @@ def ComputeDeltatT(r: list[float], v: list[float], theta: list[float], prevdelta
     # print(f'mini {mini}\nminiv {minivr}')
 
 
-
+    print(prevdeltat)
     # sqrt(r.**2 + r**2 * theta.**2)
-    v = sqrt( minivr ** 2 + (minivr ** 2) * (theta[-1] - theta[-2] ) ** 2 )
+    v = sqrt( minivr ** 2 + (minivr ** 2) * (theta[-1] - theta[-2]  / prevdeltat) ** 2 )
 
 
-    deltat = (-1) * 2 * pc.pi * mini / (conf._computeDeltaDeltatFactor *v)
+    deltat =  2 * pc.pi * mini / (conf._computeDeltaDeltatFactor *v)
     # print(f'deltat : {deltat}')
     return clamp(abs(deltat), conf._computeDeltaClamp[0], conf._computeDeltaClamp[1])
 
-
+    """
 
 
 
@@ -295,9 +324,10 @@ def coupled_integrator(object: object,
 
 
 
-def nbody_coupled_integrator(objects: object, 
+def nbody_coupled_integrator(objects: list[object], 
                        blackhole: object, 
                        steps: int, 
+                       initialDeltat: float
                        ):
     
 
@@ -309,7 +339,7 @@ def nbody_coupled_integrator(objects: object,
     l0s = [compute_l0(obj.r, obj.vtheta) for obj in objects]
 
     #creates deltat variable
-    deltat = 0
+    deltat = initialDeltat
 
     #initialise theta list
     theta_list = [[0, obj.theta] for obj in objects]
@@ -321,7 +351,14 @@ def nbody_coupled_integrator(objects: object,
 
     objects_to_depop = []
     #for each step
+
+    rem_time = datetime.now()
     for i in range(steps):
+
+        # ~ just to print simulation steps and infos
+        if i %300 == 0:
+            print(f' {int(i/steps * 100)} % \t current deltat : {deltat:.5f} \t step time : {(datetime.now() - rem_time)} \t estimated remaining time : {(datetime.now() - rem_time) * (steps-i)}', end='\r')
+        rem_time = datetime.now()
 
 
 
@@ -334,25 +371,21 @@ def nbody_coupled_integrator(objects: object,
         if len(objects) == 0:
             break
             
-        # print(i)
         #get all last computed rs and vs (and thetas)
         rs = [ item[-1] for item in r_list] 
         vs = [ item[-1] for item in v_list]
         thetas = [ item[-1] for item in theta_list]
 
         col = DetectCollisions(rs, thetas, objects)
-        if col != []:
-            print(f'collisions on iteration {i} for objects {col}')
+        if col != [] and True: #enable debug or not
+            print(f'collisions on iteration {i} for objects {col}\n')
             
 
-        #print(rs)
-        #print(vs)
-        #print(thetas)
+       
 
 
         #compute a deltat
-        deltat = ComputeDeltatT(rs, vs, theta_list, deltat)
-        #print(deltat)
+        if i!=0 : deltat = ComputeDeltatT(objects, deltat)#do not run on first iteration, need to use deltat passed
         #for each object do 1 step
         for obj_index in range(len(objects)):
 
@@ -364,17 +397,23 @@ def nbody_coupled_integrator(objects: object,
             theta_list[obj_index].append(theta_next(theta_list[obj_index][-1], l0s[obj_index], r_list[obj_index][-1], deltat))
 
 
+            # * updates lists of objects with new one
+            objects[obj_index].r_list = list(r_list[obj_index])
+            objects[obj_index].theta_list = list(theta_list[obj_index][1:])
+
+
+
             # ~ escape condition
             if r_list[obj_index][-1] < conf._outOfBoundMin or r_list[obj_index][-1] > conf._outOfBoundMax:
 
-                print(f'object escape, remaining objects before pop : {len(objects)}, iteration number {i}')
+                print(f'\nobject escape, remaining objects before pop : {len(objects)}, iteration number {i}\n')
 
                 # * packs and puts the finished object in the output list
                 # finished_objects.append(
                 #     (r_list[obj_index], theta_list[obj_index][1:]) #getting rid of the first element as it was added for computational purpose on the initialisation of theta_list
                 # )
-                objects[obj_index].r_list = list(r_list[obj_index])
-                objects[obj_index].theta_list = list(theta_list[obj_index][1:])
+                # objects[obj_index].r_list = list(r_list[obj_index])
+                # objects[obj_index].theta_list = list(theta_list[obj_index][1:])
 
                 finished_objects.append(objects[obj_index])
 
@@ -398,8 +437,9 @@ def nbody_coupled_integrator(objects: object,
         #     (r_list[-1], theta_list[-1][1:]) #getting rid of the first element as it was added for computational purpose on the initialisation of theta_list
         # )
 
-        objects[-1].r_list = list(r_list[-1])
-        objects[-1].theta_list = list(theta_list[-1][1:])
+        #* should not be necessary as it is implemented above
+        # objects[-1].r_list = list(r_list[-1])
+        # objects[-1].theta_list = list(theta_list[-1][1:])
 
         finished_objects.append(objects[-1])
 
@@ -478,3 +518,63 @@ def DetectCollisions(r: list[float], theta: list[float], objects: list[object]):
                 collisions.append( (point, neighbor) )
     
     return collisions
+
+
+
+
+
+
+
+
+
+
+# def elastic_collision_(r1, theta1, vr1, vtheta1, m1, r2, theta2, vr2, vtheta2, m2):
+def elastic_collision_(obj1: object, obj2: object, deltat: float):
+
+
+    m1 = obj1.m
+    r1 = obj1.r_list[-1]
+    vr1 = (r1-obj1.r_list[-2])/deltat
+    theta1 =obj1.theta_list[-1]
+    vtheta1 = (theta1-obj1.theta_list[-2])/deltat
+
+ #!
+
+    m2 = obj2.m
+    r2 = obj2.r_list[-1]
+    vr2 = (r1-obj2.r_list[-2])/deltat
+    theta2 =obj2.theta_list[-1]
+    vtheta2 = (theta1-obj2.theta_list[-2])/deltat
+
+
+
+
+
+    # Convert angles from degrees to radians
+    theta1 = radians(theta1)
+    theta2 = radians(theta2)
+    
+    # Calculate initial momenta in both radial and angular directions
+    pr1_initial = m1 * vr1
+    pr2_initial = m2 * vr2
+    ptheta1_initial = m1 * r1 * vtheta1
+    ptheta2_initial = m2 * r2 * vtheta2
+    
+    # Calculate the relative velocities in both radial and angular directions
+    delta_r = r1 - r2
+    delta_theta = theta1 - theta2
+    
+    relative_vr = vr1 - vr2
+    relative_vtheta = r1 * vtheta1 - r2 * vtheta2
+    
+    # Calculate the relative momenta in both radial and angular directions
+    relative_pr = pr1_initial - pr2_initial
+    relative_ptheta = ptheta1_initial - ptheta2_initial
+    
+    # Calculate the final velocities using the elastic collision equations
+    vr1_final = (2 * m2 * vr2 + pr1_initial - pr2_initial) / (m1 + m2)
+    vr2_final = (2 * m1 * vr1 + pr2_initial - pr1_initial) / (m1 + m2)
+    
+    vtheta1_final = (relative_vtheta + relative_pr * delta_r) / (m1 + m2)
+    vtheta2_final = (relative_vtheta + relative_pr * delta_r) / (m1 + m2)
+   
