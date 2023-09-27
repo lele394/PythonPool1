@@ -357,7 +357,7 @@ def nbody_coupled_integrator(objects: list[object],
 
         # ~ just to print simulation steps and infos
         if i %300 == 0:
-            print(f' {int(i/steps * 100)} % \t current deltat : {deltat:.5f} \t step time : {(datetime.now() - rem_time)} \t estimated remaining time : {(datetime.now() - rem_time) * (steps-i)}', end='\r')
+            print(f' {int(i/steps * 100)} % \t current deltat : {deltat:.5f} \t step time : {(datetime.now() - rem_time)} \t estimated remaining time : {(datetime.now() - rem_time) * (steps-i)}')
         rem_time = datetime.now()
 
 
@@ -376,9 +376,18 @@ def nbody_coupled_integrator(objects: list[object],
         vs = [ item[-1] for item in v_list]
         thetas = [ item[-1] for item in theta_list]
 
-        col = DetectCollisions(rs, thetas, objects)
+        # ~ Collision stuff hereeee
+        if i < conf._collisionGracePeriod: col = []
+        else: col = DetectCollisions(rs, thetas, objects)
         if col != [] and True: #enable debug or not
-            print(f'collisions on iteration {i} for objects {col}\n')
+            print(f'collisions on iteration {i} for objects {col}')
+        
+        for pair in col:
+            object_pair = ( 
+                objects[pair[0]],
+                objects[pair[1]]
+             )
+            update_colliding_objects(object_pair, r_list, v_list, theta_list, l0s, deltat )
             
 
        
@@ -389,11 +398,11 @@ def nbody_coupled_integrator(objects: list[object],
         #for each object do 1 step
         for obj_index in range(len(objects)):
 
-            # * stuff for r
+            # * stuff for r | uses r_list, v_list, deltat, l0s
             r_list[obj_index].append( rk_next(r_list[obj_index][-1], v_list[obj_index][-1], deltat) )
             v_list[obj_index].append( vk_next(v_list[obj_index][-1], r_list[obj_index][-1], blackhole.m, l0s[obj_index], deltat) )
 
-            # * stuff for theta
+            # * stuff for theta | uses theta_list, l0s, r_list
             theta_list[obj_index].append(theta_next(theta_list[obj_index][-1], l0s[obj_index], r_list[obj_index][-1], deltat))
 
 
@@ -403,17 +412,11 @@ def nbody_coupled_integrator(objects: list[object],
 
 
 
-            # ~ escape condition
+            # ~ escape conditions
             if r_list[obj_index][-1] < conf._outOfBoundMin or r_list[obj_index][-1] > conf._outOfBoundMax:
 
-                print(f'\nobject escape, remaining objects before pop : {len(objects)}, iteration number {i}\n')
-
-                # * packs and puts the finished object in the output list
-                # finished_objects.append(
-                #     (r_list[obj_index], theta_list[obj_index][1:]) #getting rid of the first element as it was added for computational purpose on the initialisation of theta_list
-                # )
-                # objects[obj_index].r_list = list(r_list[obj_index])
-                # objects[obj_index].theta_list = list(theta_list[obj_index][1:])
+                if r_list[obj_index][-1] < conf._outOfBoundMin: print(f'object fell in blackhole, remaining objects before pop : {len(objects)}, iteration number {i}')
+                if r_list[obj_index][-1] > conf._outOfBoundMax: print(f'object escape, remaining objects before pop : {len(objects)}, iteration number {i}')
 
                 finished_objects.append(objects[obj_index])
 
@@ -432,14 +435,6 @@ def nbody_coupled_integrator(objects: list[object],
 
     # * writes all remaining objects to the output list
     while objects != []:
-        # * packs and puts the finished object in the output list
-        # finished_objects.append(
-        #     (r_list[-1], theta_list[-1][1:]) #getting rid of the first element as it was added for computational purpose on the initialisation of theta_list
-        # )
-
-        #* should not be necessary as it is implemented above
-        # objects[-1].r_list = list(r_list[-1])
-        # objects[-1].theta_list = list(theta_list[-1][1:])
 
         finished_objects.append(objects[-1])
 
@@ -529,17 +524,17 @@ def DetectCollisions(r: list[float], theta: list[float], objects: list[object]):
 
 
 # def elastic_collision_(r1, theta1, vr1, vtheta1, m1, r2, theta2, vr2, vtheta2, m2):
-def elastic_collision_(obj1: object, obj2: object, deltat: float):
+def elastic_collision(obj1: object, obj2: object, deltat: float):
 
 
+    # * gets data fo object 1
     m1 = obj1.m
     r1 = obj1.r_list[-1]
     vr1 = (r1-obj1.r_list[-2])/deltat
     theta1 =obj1.theta_list[-1]
     vtheta1 = (theta1-obj1.theta_list[-2])/deltat
 
- #!
-
+    # * gets data fo object 2
     m2 = obj2.m
     r2 = obj2.r_list[-1]
     vr2 = (r1-obj2.r_list[-2])/deltat
@@ -550,31 +545,40 @@ def elastic_collision_(obj1: object, obj2: object, deltat: float):
 
 
 
-    # Convert angles from degrees to radians
+    # * Convert angles from degrees to radians
     theta1 = radians(theta1)
     theta2 = radians(theta2)
     
-    # Calculate initial momenta in both radial and angular directions
+    # * Calculate initial momenta in both radial and angular directions
     pr1_initial = m1 * vr1
     pr2_initial = m2 * vr2
     ptheta1_initial = m1 * r1 * vtheta1
     ptheta2_initial = m2 * r2 * vtheta2
     
-    # Calculate the relative velocities in both radial and angular directions
+    # * Calculate the relative velocities in both radial and angular directions
     delta_r = r1 - r2
     delta_theta = theta1 - theta2
     
     relative_vr = vr1 - vr2
     relative_vtheta = r1 * vtheta1 - r2 * vtheta2
     
-    # Calculate the relative momenta in both radial and angular directions
+    # * Calculate the relative momenta in both radial and angular directions
     relative_pr = pr1_initial - pr2_initial
     relative_ptheta = ptheta1_initial - ptheta2_initial
     
-    # Calculate the final velocities using the elastic collision equations
+    # * Calculate the final velocities using the elastic collision equations
     vr1_final = (2 * m2 * vr2 + pr1_initial - pr2_initial) / (m1 + m2)
     vr2_final = (2 * m1 * vr1 + pr2_initial - pr1_initial) / (m1 + m2)
     
     vtheta1_final = (relative_vtheta + relative_pr * delta_r) / (m1 + m2)
     vtheta2_final = (relative_vtheta + relative_pr * delta_r) / (m1 + m2)
    
+
+
+
+def update_colliding_objects(pair: (object, object), r_list, v_list, theta_list, l0s, deltat):
+    
+    elastic_collision(pair[0], pair[1], deltat)
+
+    
+    return

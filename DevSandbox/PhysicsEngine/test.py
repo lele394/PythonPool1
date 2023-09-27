@@ -11,7 +11,7 @@ deltat = 0.01
 
 bh = e.object(0,0,0,0,10**10)
 
-vel = 0.047
+vel = 0.04
 
 
 projs = [
@@ -26,7 +26,6 @@ objects = e.nbody_coupled_integrator(projs, bh, steps, deltat)
 
 
 
-"""
 # * creates plot and add the black hole
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 circle = plt.Circle((0, 0), 1, transform=ax.transData._b, color="red", alpha=0.4)
@@ -45,4 +44,3 @@ for object in objects:
 
 plt.show()
 
-"""
