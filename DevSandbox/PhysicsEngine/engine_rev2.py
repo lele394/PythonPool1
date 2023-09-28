@@ -17,6 +17,78 @@ class object:
                  m: float, 
                  radius= 0,
                  ):
+        """
+        creates an object class which represent a physical object in the simulation
+        has multiple functions attached to itself, namely :
+
+        UpdateVariables( deltat ) :
+            input : deltat : float
+            return : /
+            desc : updates r, theta, vr and vtheta from the list.
+                   do not update l0 as it is a movement constant
+                   and should only be updated when a collision occurs
+
+        speed_norm( deltat ) :
+            input : deltat : float
+            return : float norm of the speed vector
+            desc : computes and returns the norm of the speed vector
+
+        GetTheta_p( deltat ) :
+            input : deltat : float
+            return : float derivative of theta
+            desc : computes and returns the derivative of theta using
+                   the 2 last theta and a deltat specified by the user
+                   (usually used after computing last theta)
+
+        ==============
+        Creation parameters :
+        --------------
+            r : float
+                radius at which you wish the object to be from the center
+            
+            theta : float
+                angle at which you wish the object to start from
+
+            vr : float
+                radial speed the object will have at the start
+
+            vtheta : float
+                angular speed the object will have at the start
+
+            m : float
+                mass of the projectile
+
+            radius : float (default 0)
+                radius of the object
+
+
+        ==============
+        Additional parameters :
+        --------------
+            l0 : float
+                has to be assigned. movement constat used in integration
+                Is initialised in the integrator by the program
+
+            r_list : list[float]
+                contains all the r coordinates of the object at each steps
+                used by the program. use thoses to plot the position
+            
+            theta_list : list[float]
+                contains all the theta coordinates of the object at each steps
+                used by the program. use thoses to plot the position
+
+            v_list : list[float]
+                contains all the r_p values of the object at each steps
+                used by the program.
+
+            IsOut : bool
+                indicates if the object is considered "out" of the simulation
+                aka it left the boundaires defined in the config file
+
+            InvulnerabilityTo : list[object]
+                not implemented
+        
+        """
         
         self.r = r
         self.theta= theta
@@ -235,6 +307,9 @@ def nbody_coupled_integrator(objects: list[object],
                        steps: int, 
                        initialDeltat: float
                        ):
+    """
+    does everything
+    """
     
 
     finished_objects = []
@@ -443,7 +518,20 @@ def DetectCollisions(r: list[float], theta: list[float], objects: list[object], 
 
 
 def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: float):
-    
+    """
+    input :
+        pair : (int, int)
+            pair of object where a collision is detected
+
+        objects : list[object]
+            list of all object present in the simulation
+
+        deltat : float
+            deltat that should be used for the step
+
+
+    updates objects with a collision
+    """
 
 
 
