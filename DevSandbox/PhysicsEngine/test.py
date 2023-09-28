@@ -1,25 +1,37 @@
 import engine_rev2 as e
+import physicalConstants as pc
 import matplotlib.pyplot as plt
 from math import sqrt, radians
 
-outOfBound = 5
+outOfBound =  10
+inOfBound = 0
 
-steps = 1000
+steps = 1000000
+
 deltat = 0.01
 
 
 
 bh = e.object(0,0,0,0,10**10)
 
-vel = 0.04
 
+
+
+def GetCircularVelocity(r: float):
+    return sqrt(pc.G * bh.m / r  )
+
+vel = 0.05
 
 projs = [
    # e.object(7, 0, 0, -0.043, 10**4, 0.05),
-    e.object(7, 0, 0, vel, 10**4, 0.02),
-    e.object(7, 0, 0, -vel, 10**4, 0.02),
+    e.object(7, 0, 0, vel, 10**4, 0.01),
+    e.object(7, 0, 0, -vel,  10**4, 0.01),
 ]
 
+
+
+deltat = e.deltaless_deltat(projs)
+print(f'initial deltat {deltat}')
 
 
 # ! for 1 run only
@@ -66,9 +78,10 @@ while inp != "q":
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     #sets boundaries
-    ax.set_ylim([0,outOfBound])
-    circle = plt.Circle((0, 0), 1, transform=ax.transData._b, color="red", alpha=0.4)
-    ax.add_artist(circle)
+    ax.set_ylim([inOfBound,outOfBound])
+    # ! uncomment next to show blackhole, conflicts when debugging, god knows why
+    # circle = plt.Circle((0, 0), 1, transform=ax.transData._b, color="red", alpha=0.4)
+    # ax.add_artist(circle)
 
     
     # * used as a temporary holder for below's POC
@@ -81,7 +94,7 @@ while inp != "q":
 
 
         ax.plot(theta, r)
-        # ax.plot(theta[45:55], r[45:55], linestyle="-", marker="o")
+        # ax.plot(theta[768:], r[768:], linestyle="-", marker="")
 
     #reset objects
     projs = list([])
@@ -113,6 +126,9 @@ while inp != "q":
         steps = int(inp.split(" ")[-1])
         continue
 
+    if "ppos" in inp:
+        for obj in projectiles:
+            print(obj.r, obj.theta)
 
     # ! comment to enable missile firing
     continue
