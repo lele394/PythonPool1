@@ -254,7 +254,11 @@ def nbody_coupled_integrator(objects: list[object],
             update_colliding_objects(pair, objects, deltat)
         """
         """
-
+        doNotUpdate = []
+        for pair in col:
+            for i in pair:
+                if objects[i] not in doNotUpdate:
+                    doNotUpdate.append(objects[i])
        
 
 
@@ -262,6 +266,8 @@ def nbody_coupled_integrator(objects: list[object],
         if i!=0 : deltat = ComputeDeltatT(objects, deltat)#do not run on first iteration, need to use deltat passed
         #for each object do 1 step
         for obj in objects:
+
+            if obj in doNotUpdate: continue
 
             # * stuff for r 
             obj.r_list.append( rk_next(obj.r_list[-1], obj.v_list[-1], deltat) )
@@ -377,56 +383,30 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
     atheta_p = (a.theta_list[-1] - a.theta_list[-2]) / deltat
     btheta_p = (b.theta_list[-1] - b.theta_list[-2]) / deltat
 
+
     # * calculate the final velocities in polar coordinates
-    a.v_list.append(((a.m-b.m)*a.v_list[-1]+2*b.m*b.v_list[-1])/(a.m+b.m))
-    b.v_list.append(((b.m-a.m)*b.v_list[-1]+2*a.m*a.v_list[-1])/(a.m+b.m))
+    arp = ((a.m-b.m)*a.v_list[-1]+2*b.m*b.v_list[-1])/(a.m+b.m)
+    brp = ((b.m-a.m)*b.v_list[-1]+2*a.m*a.v_list[-1])/(a.m+b.m)
+    a.v_list.append(arp)
+    b.v_list.append(brp)
 
     # * calculate the final angles
-    a.theta_list.append(((a.m-b.m)*a.r_list[-1]*atheta_p+2*b.m*b.r_list[-1]*btheta_p)/((a.m+b.m)*a.r_list[-1]) * deltat)
-    b.theta_list.append(((b.m-a.m)*b.r_list[-1]*btheta_p-2*a.m*a.r_list[-1]*atheta_p)/((b.m+a.m)*b.r_list[-1]) * deltat)
+    a.theta_list.append( a.theta_list[-1] + ((a.m-b.m)*a.r_list[-1]*atheta_p+2*b.m*b.r_list[-1]*btheta_p)/((a.m+b.m)*a.r_list[-1]) * deltat)
+    b.theta_list.append( b.theta_list[-1] + ((b.m-a.m)*b.r_list[-1]*btheta_p-2*a.m*a.r_list[-1]*atheta_p)/((b.m+a.m)*b.r_list[-1]) * deltat)
 
     # * add position
-    a.r_list.append(a.v_list[-1] * deltat)
-    b.r_list.append(b.v_list[-1] * deltat)
+    a.r_list.append(a.r_list[-1] + arp * deltat)
+    b.r_list.append(b.r_list[-1] + brp * deltat)
 
-    # print('=========================')
-    # print(a.theta_list[-1])
-    # print(b.theta_list[-1])
-    # print(a.r_list[-1])
-    # print(b.r_list[-1])
-
-    """
-    ia = pair[0]
-    ib = pair[0]
-
-    atheta_p = (a.theta_list[-1] - a.theta_list[-2]) / deltat
-    btheta_p = (b.theta_list[-1] - b.theta_list[-2]) / deltat
-
-    ar = a.r_list[-1]
-    br = b.r_list[-1]
-
-    ar_p = a.v_list[-1]
-    br_p = b.v_list[-1]
+    print('=========================')
+    print(atheta_p, btheta_p)
+    print(a.theta_list[-1] - a.theta_list[-2])
+    print(b.theta_list[-1] - b.theta_list[-2])
+    print(a.r_list[-1] - a.r_list[-2])
+    print(b.r_list[-1] - b.r_list[-2])
 
 
-    #1
-    a.v_list.append(((a.m - b.m) * ar_p + 2*b.m* br_p) / (a.m+b.m))
-    b.v_list.append(((b.m - a.m) * br_p + 2*a.m* ar_p) / (a.m+b.m) )
 
-    a.r_list.append(a.v_list[-1]*deltat)
-    b.r_list.append(b.v_list[-1]*deltat)
-
-    ar = a.r_list[-1]
-    br = b.r_list[-1]
-
-    #2
-    atheta_p = ((a.m-b.m)*ar *atheta_p +2*b.m *br *btheta_p)/((a.m+b.m)*ar)
-    btheta_p = ((b.m-a.m)*br *btheta_p -2*a.m *ar *atheta_p)/((b.m+a.m)*br)
-
-    a.theta_list.append(atheta_p*deltat)
-    b.theta_list.append(btheta_p*deltat)
-
-    """
     """
     # ! made in Trigui
     # Calculate the final velocities in polar coordinates

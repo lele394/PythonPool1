@@ -2,23 +2,22 @@ import engine_rev2 as e
 import matplotlib.pyplot as plt
 from math import sqrt, radians
 
-outOfBound = 30
+outOfBound = 5
 
-steps = 10
+steps = 1000
 deltat = 0.01
 
 
 
 bh = e.object(0,0,0,0,10**10)
 
-vel = 0.05
+vel = 0.04
 
 
 projs = [
    # e.object(7, 0, 0, -0.043, 10**4, 0.05),
-    e.object(7, 0, 0, vel+0.001, 10**5, 0.05),
-    e.object(7, 0, 0, -vel, 10**4, 0.05),
-    e.object(7, 0, 0, 1, 10**4, 0.05),
+    e.object(7, 0, 0, vel, 10**4, 0.02),
+    e.object(7, 0, 0, -vel, 10**4, 0.02),
 ]
 
 
@@ -36,7 +35,6 @@ projs = [
 
 #     ax.plot(theta, r)
 #     # ax.plot(theta, r, linestyle="", marker="o")
-
 
 
 
@@ -83,7 +81,7 @@ while inp != "q":
 
 
         ax.plot(theta, r)
-        # ax.plot(theta, r, linestyle="", marker="o")
+        # ax.plot(theta[45:55], r[45:55], linestyle="-", marker="o")
 
     #reset objects
     projs = list([])
@@ -102,7 +100,7 @@ while inp != "q":
     if projectiles == []:
         plt.show()
         plt.pause(0.001)
-        input("system has finished simulation, no objects reamining. ")
+        input("system has finished simulation, no objects reamining. Press enter to quit\n> ")
         quit()
 
     plt.draw()
@@ -116,6 +114,8 @@ while inp != "q":
         continue
 
 
+    # ! comment to enable missile firing
+    continue
 
 
 
@@ -126,9 +126,6 @@ while inp != "q":
 
 
 
-
-
-    # continue
 
     # * testing implementation of missile firing
     if inp == "l":
