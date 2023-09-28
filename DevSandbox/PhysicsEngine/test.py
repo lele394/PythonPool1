@@ -2,7 +2,7 @@ import engine_rev2 as e
 import matplotlib.pyplot as plt
 from math import sqrt, radians
 
-
+outOfBound = 30
 
 steps = 10
 deltat = 0.01
@@ -45,7 +45,6 @@ projs = [
 def DrawVector(object, r, theta, plot, color="blue"):
     r = [object.r, object.r+r]
     theta = [object.theta, object.theta + theta]
-    print(r, theta)
     plot.plot(theta, r, color=color)
 
 
@@ -68,11 +67,13 @@ while inp != "q":
     plt.close()
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+    #sets boundaries
+    ax.set_ylim([0,outOfBound])
     circle = plt.Circle((0, 0), 1, transform=ax.transData._b, color="red", alpha=0.4)
     ax.add_artist(circle)
 
     
-    
+    # * used as a temporary holder for below's POC
     tempo_coordinates = []
     
     for proj in projectiles:
@@ -109,6 +110,16 @@ while inp != "q":
 
     inp = input("q to quit > ")
 
+    #set new steps and does a sim
+    if "setsteps" in inp:
+        steps = int(inp.split(" ")[-1])
+        continue
+
+
+
+
+
+
 
 
 
@@ -123,19 +134,24 @@ while inp != "q":
     if inp == "l":
 
         inp = input("   vr vtheta type\n > ")
-        to_add = []
+        to_add = [] # list to keep the coordinates of the new object
         while inp != "c" or inp !="cancel":
             if inp == "c": break
 
+            # splicing?
             inp_split = [float(i) for i in inp.split(" ")]
 
 
+            # ~ could just pass the ship object if we keep track of it above, add a "type" variables on objects?
             ship_id = 0
             ship = projectiles[ship_id]
 
-
+            #need to close open windows before plotting again
+            # ! might wanna change that, inneficient as FUCK and probably slowing this bitch down a lot
             plt.close()
             fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+            #sets boundaries
+            ax.set_ylim([0,outOfBound])
             circle = plt.Circle((0, 0), 1, transform=ax.transData._b, color="red", alpha=0.4)
             ax.add_artist(circle)
 
@@ -150,7 +166,7 @@ while inp != "q":
             DrawVector(ship, 1, 0, ax, "red") #r
             DrawVector(ship, 0, radians(8), ax, "white") #theta
 
-            #draw launch vector
+            #draw launch vector, multiplied by 100 so we can see it, might wanna pass it in a log tho
             DrawVector(ship, inp_split[0]*100, radians(inp_split[1])*100, ax, "green")
 
             to_add = [inp_split[0], inp_split[1]]
@@ -164,7 +180,7 @@ while inp != "q":
         
 
     if inp == "c":
-        # * adds projectile, mass 10**2 and radius 0.02
+        # * adds projectile, mass 10**2 and radius 0.02, indicative
         projectiles.append( e.object(ship.r, ship.theta, to_add[0], to_add[1], 10**2, 0.02)   )
             
 
