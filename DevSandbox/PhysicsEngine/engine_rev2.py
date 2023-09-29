@@ -10,6 +10,7 @@ import config as conf
 
 class object:
     def __init__(self, 
+                 tpe: str,
                  r: float, 
                  theta: float, 
                  vr:float, 
@@ -39,6 +40,9 @@ class object:
             desc : computes and returns the derivative of theta using
                    the 2 last theta and a deltat specified by the user
                    (usually used after computing last theta)
+
+        Copy() :
+            return : new object with the same properties
 
         ==============
         Creation parameters :
@@ -89,6 +93,7 @@ class object:
                 not implemented
         
         """
+        self.type = tpe
         
         self.r = r
         self.theta= theta
@@ -97,10 +102,10 @@ class object:
         self.m = m
         self.radius = radius
 
-        self.l0 = compute_l0(self.r, vtheta)
+        self.l0 = compute_l0(self.r, self.vtheta)
 
         self.r_list = [r]
-        self.theta_list = [ theta]
+        self.theta_list = [ theta ]
         self.v_list = [vr]
 
         self.IsOut = False# if true, means the object is out of the simulation
@@ -130,7 +135,37 @@ class object:
         return self.theta_list[-1]
     
     def GetTheta_p(self, deltat):
+        if len(self.theta_list) == 1: return self.vtheta
         return (self.theta_list[-1] - self.theta_list[-2]) / deltat
+    
+    def Copy(self):
+        obj = object( self.type,
+                      self.r,
+                      self.theta,
+                      self.vr,
+                      self.vtheta,
+                      self.m,
+                      self.radius)
+        
+        obj.l0 = self.l0
+
+        obj.r_list = self.r_list
+        obj.theta_list = self.theta_list
+        obj.v_list = self.v_list
+        
+        return obj
+    
+    def Debug(self, deltat):
+        print( "\n==============================")
+        print(f'debugging object {self}')
+        print(f'm {self.m}\t radius {self.radius}\t l0 {self.l0}')
+        print(f'r {self.r}\t theta {self.theta}')
+        print(f'vr {self.vr}\t vtheta {self.vtheta}')
+        print(f'last r {self.r_list[-1]}\t last theta {self.theta_list[-1]}')
+        print(f'last vr {self.v_list[-1]}\t last vtheta {self.GetTheta_p(deltat)}')
+        print(f'==== end debug for {self} ====\n')
+
+
     
 
    
@@ -310,22 +345,19 @@ def nbody_coupled_integrator(objects: list[object],
     """
     does everything
     """
+    print(f'\n\n STARTING SIMULATION \n\n')
     
 
     finished_objects = []
     objects_to_depop = []
 
+    deltat_list = []
 
     #creates deltat variable
     deltat = initialDeltat
 
 
 
-
-
-    #initialize v_list?
-    for obj in objects:
-        obj.v_list = [obj.vr + acceleration(blackhole.m, obj.r_list[0], obj.l0)]
 
 
 
@@ -375,25 +407,36 @@ def nbody_coupled_integrator(objects: list[object],
         if col != [] and conf._debugCollisions:
             print(f'collisions on iteration {i} for objects {col}')
         
+        """
         for pair in col:
              update_colliding_objects(pair, objects, deltat)
 
+        for pair in col:
+            UpdateAddObjectsInvulnerabilities(pair, objects, deltat)
+
+        for obj in objects:
+            UpdateObjectsInvulnerabilities(obj, deltat)
 
 
-
+        # * objects tht shall not be updated as they already where in the collision
         for pair in col:
             for i in pair:
                 if objects[i] not in doNotUpdate:
                     doNotUpdate.append(objects[i])
+        """
 
 
 
 
 
         #compute a deltat
-        if i!=0 : deltat = ComputeDeltatT(objects, deltat)#do not run on first iteration, need to use deltat passed
+        if i!=0 : deltat = ComputeDeltatT(objects, deltat); deltat_list.append(deltat)#do not run on first iteration, need to use deltat passed
         #for each object do 1 step
         for obj in objects:
+
+            #debug objects
+            # print(obj.r_list[-1] , "\t", obj.v_list[-1],"\t", obj.theta_list[-1], "\t", obj.speed_norm(deltat))
+
 
             #! uncomment
             if obj in doNotUpdate: continue
@@ -407,8 +450,10 @@ def nbody_coupled_integrator(objects: list[object],
 
 
 
+            # print(obj.r_list[-1])
             # ~ escape conditions
             if obj.r_list[-1] < conf._outOfBoundMin or obj.r_list[-1] > conf._outOfBoundMax:
+
 
                 if obj.r_list[-1] < conf._outOfBoundMin: print(f'object fell in blackhole, remaining objects before pop : {len(objects)}, iteration number {i}'); obj.IsOut = True
                 if obj.r_list[-1] > conf._outOfBoundMax: print(f'object escape, remaining objects before pop : {len(objects)}, iteration number {i}'); obj.IsOut = True
@@ -425,7 +470,7 @@ def nbody_coupled_integrator(objects: list[object],
 
     # * writes all remaining objects to the output list
 
-    return (finished_objects + objects, deltat)
+    return (finished_objects + objects, deltat, deltat_list)
     #                                   ^ deltat is returned cuz needed to initiate nextstep
 
 
@@ -484,10 +529,12 @@ def DetectCollisions(r: list[float], theta: list[float], objects: list[object], 
 
 
         #get all object it's invulnerable to
-        invulnerable_to = [ l for l in objects[point].InvulnerabiltyTo  ]
+        invulnerable_to = [ l[0] for l in objects[point].InvulnerabiltyTo  ]
 
         #check for particles of indices n-1
         for neighbor in range(point+1, len(master)):
+
+            if objects[neighbor] in invulnerable_to: print(f'Collision detectd on {(point, neighbor)} but are on grace period'); continue
 
 
             # ! is that even supposed to work?
@@ -603,8 +650,13 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
     b.l0 = compute_l0(b.r, b.vtheta)
 
     """
-    a = objects[pair[0]]
-    b = objects[pair[1]]
+    
+    a_o = objects[pair[0]]
+    b_o = objects[pair[1]]
+
+    # * duplicating objects to avoid conflict during calculations
+    a = a_o#.Copy()
+    b = b_o#.Copy()
 
     atheta_p = (a.theta_list[-1] - a.theta_list[-2]) / deltat
     btheta_p = (b.theta_list[-1] - b.theta_list[-2]) / deltat
@@ -613,16 +665,15 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
     # * calculate the final velocities in polar coordinates
     arp = ((a.m-b.m)*a.v_list[-1]+2*b.m*b.v_list[-1])/(a.m+b.m)
     brp = ((b.m-a.m)*b.v_list[-1]+2*a.m*a.v_list[-1])/(a.m+b.m)
-    a.v_list.append(arp)
-    b.v_list.append(brp)
+    a_o.v_list.append(arp)
+    b_o.v_list.append(brp)
 
     # * calculate the final angles
-    a.theta_list.append( a.theta_list[-1] - ((a.m-b.m)*a.r_list[-1]*atheta_p+2*b.m*b.r_list[-1]*btheta_p)/((a.m+b.m)*a.r_list[-1]) * deltat)
-    b.theta_list.append( b.theta_list[-1] - ((b.m-a.m)*b.r_list[-1]*btheta_p-2*a.m*a.r_list[-1]*atheta_p)/((b.m+a.m)*b.r_list[-1]) * deltat)
+    a_o.theta_list.append( a.theta_list[-1] - ((a.m-b.m)*a.r_list[-1]*atheta_p+2*b.m*b.r_list[-1]*btheta_p)/((a.m+b.m)*a.r_list[-1]) * deltat)
 
     # * add position
-    a.r_list.append(a.r_list[-1] + arp * deltat)
-    b.r_list.append(b.r_list[-1] + brp * deltat)
+    a_o.r_list.append(a.r_list[-1] + arp * deltat)
+    b_o.r_list.append(b.r_list[-1] + brp * deltat)
     
 
     # ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -632,8 +683,8 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
     a.UpdateVariables(deltat)
     b.UpdateVariables(deltat)
 
-    a.l0 = compute_l0(a.r, a.vtheta)
-    b.l0 = compute_l0(b.r, b.vtheta)
+    a_o.l0 = compute_l0(a.r, a.vtheta)
+    b_o.l0 = compute_l0(b.r, b.vtheta)
 
     # & gestion of grace period between both objects
     # condition on deltat : 
@@ -663,7 +714,6 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
 
 
 
-"""#! seems like we don't need those. keeping it here if it happens to become fucky tho.
 def UpdateAddObjectsInvulnerabilities(pair: (int, int), objects: list[object],  deltat: float):
     
     a = objects[pair[0]]
@@ -675,9 +725,12 @@ def UpdateAddObjectsInvulnerabilities(pair: (int, int), objects: list[object],  
 
 
     invulnerability = abs((a.radius + b.radius) / max(val_r, val_theta))
+
+    # ! override top calculation, bd idea b oh well
+    invulnerability = 20
+
     # for a object : #! problem here
     objects[pair[0]].InvulnerabiltyTo.append( [b, invulnerability] )
-
 
     # for b object :
     objects[pair[1]].InvulnerabiltyTo.append( [a, invulnerability] )
@@ -686,8 +739,7 @@ def UpdateAddObjectsInvulnerabilities(pair: (int, int), objects: list[object],  
 def UpdateObjectsInvulnerabilities(object: object, deltat: float):
 
     for invul in object.InvulnerabiltyTo:
-        invul[1] -= deltat
+        # invul[1] -= deltat
+        invul[1] -= 1 # ! because of override in prev function
     
     object.InvulnerabiltyTo = [ i for i in object.InvulnerabiltyTo if i[1]>0]
-
-"""

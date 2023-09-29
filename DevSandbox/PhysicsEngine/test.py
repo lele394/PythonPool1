@@ -1,31 +1,36 @@
 import engine_rev2 as e
 import physicalConstants as pc
 import matplotlib.pyplot as plt
-from math import sqrt, radians
+from math import sqrt, radians, cos, sin
 
-outOfBound =  10
+outOfBound =  40
 inOfBound = 0
 
-steps = 1000000
+steps = 10000
 
 deltat = 0.01
 
 
 
-bh = e.object(0,0,0,0,10**10)
+bh = e.object("Blackhole", 0,0,0,0,10**12)
 
 
 
 
 def GetCircularVelocity(r: float):
-    return sqrt(pc.G * bh.m / r  )
+    return sqrt(pc.G * bh.m / r**2  )
 
-vel = 0.05
+
+vel = 0.022
+
+
+deltatt_list = []
+
 
 projs = [
    # e.object(7, 0, 0, -0.043, 10**4, 0.05),
-    e.object(7, 0, 0, vel, 10**4, 0.01),
-    e.object(7, 0, 0, -vel,  10**4, 0.01),
+    e.object("Heavy", 35, 0, 0, vel, 10, 1),
+    e.object("Ship", 35, 0, 0, -vel,  2e7, 0.01),
 ]
 
 
@@ -61,7 +66,7 @@ def DrawVector(object, r, theta, plot, color="blue"):
 
 
 # ! for multiple runs
-projectiles = projs
+projectiles = list(projs)
 
 inp = ""
 
@@ -72,16 +77,28 @@ while inp != "q":
 
     projs = list(projectiles)
 
-    (projectiles, deltat) = e.nbody_coupled_integrator(projs, bh, steps, deltat)
 
+    # for p in projs:
+        # p.Debug(deltat)
+    # print(projs)
+    (projectiles, deltat, dt_list) = e.nbody_coupled_integrator(projs, bh, steps, deltat)
+    deltatt_list = deltatt_list+dt_list
+    # print(projectiles)
+
+    # for p in projectiles:
+    #     p.Debug(deltat)
+
+
+
+    print(deltat)
     plt.close()
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     #sets boundaries
     ax.set_ylim([inOfBound,outOfBound])
     # ! uncomment next to show blackhole, conflicts when debugging, god knows why
-    # circle = plt.Circle((0, 0), 1, transform=ax.transData._b, color="red", alpha=0.4)
-    # ax.add_artist(circle)
+    circle = plt.Circle((0, 0), 1, transform=ax.transData._b, color="red", alpha=0.4)
+    ax.add_artist(circle)
 
     
     # * used as a temporary holder for below's POC
@@ -92,11 +109,26 @@ while inp != "q":
         r = proj.r_list
         tempo_coordinates.append([list(theta), list(r)])
 
+        match proj.type:
+            case "Ship":
+                col = "blue"
+            case "Heavy":
+                col = "red"
+            case _:
+                col = "yellow"
+        
+        cx = proj.r_list[-1] * cos(proj.theta_list[-1])
+        cy = proj.r_list[-1] * sin(proj.theta_list[-1])
+        circle = plt.Circle((cx ,cy ), proj.radius, transform=ax.transData._b, color=col, alpha=0.2)
+        ax.add_artist(circle)
 
-        ax.plot(theta, r)
-        # ax.plot(theta[768:], r[768:], linestyle="-", marker="")
+        # ax.plot(theta, r, color=col)
+        # ax.plot(theta, r, linestyle="", marker=".", color=col)
+        # print(len(r), len(theta))
+        ax.scatter(theta[-steps:], r[-steps:], marker=".", color=col, s=0.01)
 
     #reset objects
+    """
     projs = list([])
     for p in projectiles:
         if p.IsOut: continue
@@ -108,6 +140,7 @@ while inp != "q":
                                 p.m,
                                 p.radius)    )
     projectiles = list(projs)
+    """
 
 
     if projectiles == []:
@@ -130,6 +163,33 @@ while inp != "q":
         for obj in projectiles:
             print(obj.r, obj.theta)
 
+    if "plotdt" in inp:
+        print(f'current deltat {deltat}\t {len(deltatt_list)} deltats saved')
+
+        fig2, ax2 = plt.subplots()
+        ax2.plot([i for i in range(len(deltatt_list))], deltatt_list)
+        fig2.show()
+        input("dt/step plotted, enter to continue > ")
+
+    if "plotall" in inp:
+        fig2, ax2 = plt.subplots(subplot_kw={'projection': 'polar'})
+        for proj in projectiles:
+            theta = proj.theta_list
+            r = proj.r_list
+            match proj.type:
+                case "Ship":
+                    col = "blue"
+                case "Heavy":
+                    col = "red"
+                case _:
+                    col = "yellow"
+            ax2.scatter(theta, r, marker=".", color=col, s=0.001)
+        circle = plt.Circle((0, 0), 1, transform=ax.transData._b, color="red", alpha=0.4)
+        ax.add_artist(circle)
+        fig2.show()
+        input("all steps plotted, enter to continue > ")
+
+    
     # ! comment to enable missile firing
     continue
 
