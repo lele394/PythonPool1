@@ -6,7 +6,7 @@ from math import sqrt, radians, cos, sin
 outOfBound =  40
 inOfBound = 0
 
-steps = 10000
+steps = 100000
 
 deltat = 0.01
 
@@ -21,16 +21,17 @@ def GetCircularVelocity(r: float):
     return sqrt(pc.G * bh.m / r**2  )
 
 
-vel = 0.022
+vel = 0.03
 
 
 deltatt_list = []
+collisions_list = []
 
 
 projs = [
    # e.object(7, 0, 0, -0.043, 10**4, 0.05),
-    e.object("Heavy", 35, 0, 0, vel, 10, 1),
-    e.object("Ship", 35, 0, 0, -vel,  2e7, 0.01),
+    e.object("Heavy", 35, 0, 0, vel, 1e1, 1), #red
+    e.object("Ship", 35, 0, 0, -vel,  1e80, 0.1), #blue
 ]
 
 
@@ -81,8 +82,9 @@ while inp != "q":
     # for p in projs:
         # p.Debug(deltat)
     # print(projs)
-    (projectiles, deltat, dt_list) = e.nbody_coupled_integrator(projs, bh, steps, deltat)
+    (projectiles, deltat, dt_list, col_list) = e.nbody_coupled_integrator(projs, bh, steps, deltat)
     deltatt_list = deltatt_list+dt_list
+    collisions_list = collisions_list + col_list
     # print(projectiles)
 
     # for p in projectiles:
@@ -125,7 +127,7 @@ while inp != "q":
         # ax.plot(theta, r, color=col)
         # ax.plot(theta, r, linestyle="", marker=".", color=col)
         # print(len(r), len(theta))
-        ax.scatter(theta[-steps:], r[-steps:], marker=".", color=col, s=0.01)
+        ax.scatter(theta[-steps:], r[-steps:], marker=".", color=col, s=0.1)
 
     #reset objects
     """
@@ -188,6 +190,23 @@ while inp != "q":
         ax.add_artist(circle)
         fig2.show()
         input("all steps plotted, enter to continue > ")
+
+    if "plotobjectsdeltas" in inp:
+        deltastheta = [ ((projectiles[1].theta_list[i] - projectiles[0].theta_list[i]) % (15 * pc.pi))/40   for i in range(len(projectiles[1].theta_list))  ]
+        deltasr = [ projectiles[0].r_list[i] - projectiles[1].r_list[i]   for i in range(len(projectiles[0].r_list))  ]
+        fig2, ax2 = plt.subplots()
+        ax2.plot([i for i in range(len(deltastheta))], deltastheta, label="theta" )
+        ax2.plot([i for i in range(len(deltasr))], deltasr, label="r" )
+        ax2.scatter(collisions_list, [0 for i in range(len(collisions_list))], label="collisions detected", marker=".", color="red", s= 0.5)
+        fig2.legend()
+        fig2.show()
+        input("all deltas plotted, enter to continue > ")
+
+
+
+        
+
+
 
     
     # ! comment to enable missile firing
