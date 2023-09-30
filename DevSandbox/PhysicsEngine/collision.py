@@ -83,7 +83,7 @@ def DetectCollisions(objects: list[object], i: int, deltat: float):
 
 
 
-def PolarDotProduct(x1, x2, y1, y2):
+def DotProduct(x1, x2, y1, y2):
     #https://physics.stackexchange.com/questions/258943/dot-product-of-two-vectors-in-spherical-polar-coordinates-do-i-have-to-convert
     return x1*x2 + y1*y2
 
@@ -257,23 +257,23 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
 
 
     #for a :
-    dpa = PolarDotProduct( vxa-vxb , vya-vyb,  xa-xb , ya-yb  )
+    dpa = DotProduct( vxa-vxb , vya-vyb,  xa-xb , ya-yb  )
     #on r
-    armbr = xa-xb
-    nvxa = vxa - (2*b.m)/(a.m + b.m) * (dpa / abs(armbr)**2 ) * armbr
+    axmba = xa-xb
+    nvxa = vxa - (2*b.m)/(a.m + b.m) * (dpa / abs(axmba)**2 ) * axmba
     #on theta
-    atmbt = ya-yb
-    nvya = vxa - (2*b.m)/(a.m + b.m) * (dpa / abs(atmbt)**2) * atmbt
+    aymby = ya-yb
+    nvya = vxa - (2*b.m)/(a.m + b.m) * (dpa / abs(aymby)**2) * aymby
 
 
     #for b :
-    dpb = PolarDotProduct( vxb-vxa , vyb-vya,  xb-xa , yb-ya  )
+    dpb = DotProduct( vxb-vxa , vyb-vya,  xb-xa , yb-ya  )
     #on r
-    brmar = xb-xa
-    nvxb = vxb - (2*a.m)/(a.m + b.m) * (dpb / abs(brmar)**2 ) * brmar
+    xbmxa = xb-xa
+    nvxb = vxb - (2*a.m)/(a.m + b.m) * (dpb / abs(xbmxa)**2 ) * xbmxa
     #on theta
-    btmat = yb-ya
-    nvyb = vyb - (2*a.m)/(a.m + b.m) * (dpb / abs(btmat)**2) * btmat
+    bymay = yb-ya
+    nvyb = vyb - (2*a.m)/(a.m + b.m) * (dpb / abs(bymay)**2) * bymay
 
 
     nvra = sqrt(nvxa**2 + nvya**2)
@@ -287,6 +287,12 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
 
     objects[pair[1]].vr = nvrb
     objects[pair[1]].vtheta = nvtb
+
+    objects[pair[0]].r_list.append(nvra * deltat)
+    objects[pair[1]].r_list.append(nvrb * deltat)
+
+    objects[pair[0]].theta_list.append(nvra * deltat)
+    objects[pair[1]].theta_list.append(nvrb * deltat)
 
     #updates l0s
     objects[pair[0]].Updatel0()

@@ -32,6 +32,7 @@ projs = [
    # e.object(7, 0, 0, -0.043, 10**4, 0.05),
     e.object("Heavy", 35, 0, 0, vel, 1e1, 1), #red
     e.object("Ship", 35, 0, 0, -vel,  1e80, 0.1), #blue
+    e.object("Explosive", 32, 0, 0, -vel,  1e80, 0.1), #blue
 ]
 
 
@@ -76,15 +77,16 @@ inp = ""
 
 while inp != "q":
 
-    projs = list(projectiles)
+    projs = list(projs)
 
 
     # for p in projs:
         # p.Debug(deltat)
     # print(projs)
-    (projectiles, deltat, dt_list, col_list) = e.nbody_coupled_integrator(projs, bh, steps, deltat)
+    (outs, projs, deltat, dt_list, col_list) = e.nbody_coupled_integrator(projs, bh, steps, deltat)
     deltatt_list = deltatt_list+dt_list
     collisions_list = collisions_list + col_list
+    projectiles = projs + outs
     # print(projectiles)
 
     # for p in projectiles:
@@ -116,6 +118,8 @@ while inp != "q":
                 col = "blue"
             case "Heavy":
                 col = "red"
+            case "Explosive":
+                col = "cyan"
             case _:
                 col = "yellow"
         
@@ -144,8 +148,7 @@ while inp != "q":
     projectiles = list(projs)
     """
 
-
-    if projectiles == []:
+    if projs == []:
         plt.show()
         plt.pause(0.001)
         input("system has finished simulation, no objects reamining. Press enter to quit\n> ")

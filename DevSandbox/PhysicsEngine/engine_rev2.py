@@ -209,7 +209,8 @@ def ComputeDeltatT(objects: list[object], prevdeltat: float):
     for object in objects:
         dt = 2 * object.radius / object.speed_norm(prevdeltat)
         dt_list.append(dt)
-
+    """
+    """
 
 
     return min(dt_list)
@@ -367,8 +368,8 @@ def nbody_coupled_integrator(objects: list[object],
     print(f'\n\n STARTING SIMULATION \n\n')
     
 
+    # objects that are out of the simulation
     finished_objects = []
-    objects_to_depop = []
 
     deltat_list = []
     collision_iterations = []
@@ -420,11 +421,11 @@ def nbody_coupled_integrator(objects: list[object],
         if col != [] and conf._debugCollisions:
             print(f'collisions on iteration {i} for objects {col}')
         if col != []: collision_iterations.append(i)
+        """
         
         
         for pair in col:
              if  not( pair == "on grace"):update_colliding_objects(pair, objects, deltat)
-        """
 
         for pair in col:
             if  not( pair == "on grace"):UpdateAddObjectsInvulnerabilities(pair, objects, deltat)
@@ -476,17 +477,16 @@ def nbody_coupled_integrator(objects: list[object],
 
                 finished_objects.append(obj)
 
-                # * gets rid of the data in r, v and theta lists, and deletes the l0
                 objects_to_depop.append(obj)
 
 
         # * dels all specified objects to depop
         for obj_to_remove in objects_to_depop:
             objects.remove(obj_to_remove)
+            print(f'depop {obj_to_remove}')
 
     # * writes all remaining objects to the output list
-
-    return (finished_objects + objects, deltat, deltat_list, collision_iterations)
+    return (finished_objects, objects, deltat, deltat_list, collision_iterations)
     #                                   ^ deltat is returned cuz needed to initiate nextstep
 
 

@@ -1,5 +1,4 @@
 import moderngl_window as mglw
-import PhysicsEngine.engine as e
 from math import cos, sin
 
 
@@ -41,19 +40,14 @@ class App(mglw.WindowConfig):
 
         self.zoom = 0.01
         #simu
-        self.deltat = 1
+        self.deltat = 0.01
 
-        self.bh = e.object(0,0,0,0,10**10)
-        self.proj = e.object(15, 0, 0, 0.007, 1000)
         #for proj
-        self.l0_proj = e.compute_l0(self.proj.r, self.proj.vtheta)
         self.theta = 0
-        self.r = []
+        self.r = 20
 
 
-        self.fbo = self.ctx.framebuffer(
-            color_attachments=[self.ctx.texture((self.window_size), 4, dtype="f1")],
-        )
+
 
 
 
@@ -75,12 +69,10 @@ class App(mglw.WindowConfig):
         #self.fbo.use()
         #self.fbo.color_attachments[0].use()
 
+        self.theta += self.deltat
 
-        r = e.Leapfrog_integrator(self.proj, self.bh, 2, self.l0_proj, self.deltat)[0][-1]
-        self.theta = e.theta_next(self.theta, self.l0_proj, r, self.deltat)
-
-        x = r*cos(self.theta)
-        y = r*sin(self.theta)
+        x = self.r*cos(self.theta)
+        y = self.r*sin(self.theta)
 
         pos = (x*self.zoom,y*self.zoom)
         #print(pos)
