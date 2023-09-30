@@ -35,4 +35,8 @@ void main() {
     fragColor = vec4(0.047, 0.1333, 0.184, 0.5);
   }
 
+  vec4 tex_color = texture(tex, pixelCoord);
+
+  fragColor = fragColor + tex_color;
+
 }
