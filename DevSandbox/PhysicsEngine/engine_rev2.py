@@ -1,12 +1,12 @@
 # import PhysicsEngine.physicalConstants as pc
-import physicalConstants as pc
+from .physicalConstants import *
 from math import *
 from datetime import datetime
-from collision import *
+from .collision import *
 
 
 
-import config as conf
+from .config import *
 
 
 class object:
@@ -201,7 +201,7 @@ def ComputeDeltatT(objects: list[object], prevdeltat: float):
     dt_list = []
     # * part about objects being close to the blackhole
     for object in objects:
-        dt = 2 * pc.pi * object.r_list[-1] / (conf._computeDeltaDeltatFactor * object.speed_norm(prevdeltat))
+        dt = 2 * pi * object.r_list[-1] / (conf_computeDeltaDeltatFactor * object.speed_norm(prevdeltat))
         dt_list.append(dt)
 
 
@@ -236,7 +236,7 @@ def deltaless_deltat(objects, override=""):
     dt_list = []
     for object in objects:
         v = sqrt(object.v_list[-1]**2+object.r_list[-1]**2*object.vtheta**2)
-        dt = 2 * pc.pi * object.r_list[-1] / (conf._computeDeltaDeltatFactor * v)
+        dt = 2 * pi * object.r_list[-1] / (conf_computeDeltaDeltatFactor * v)
         dt_list.append(dt)
 
     return min(dt_list)
@@ -303,7 +303,7 @@ def acceleration(m: float, r: float, l0: float):
         float
         acceleration
     """
-    return  - pc.G * m /r**2 + (r-3/2) * l0**2 / r**4
+    return  - G * m /r**2 + (r-3/2) * l0**2 / r**4
 
 
 
@@ -387,7 +387,7 @@ def nbody_coupled_integrator(objects: list[object],
     for i in range(steps):
 
         # ~ just to print simulation steps and infos
-        if i %conf._statusPrintModulo == 0:
+        if i %conf_statusPrintModulo == 0:
             print(f' {int(i/steps * 100)} % \t current deltat : {deltat:.5f} \t step time : {(datetime.now() - rem_time)} \t estimated remaining time : {(datetime.now() - rem_time) * (steps-i)}\t active objects {len(objects)}')
         rem_time = datetime.now()
 
@@ -416,12 +416,12 @@ def nbody_coupled_integrator(objects: list[object],
         # ~ Collision stuff hereeee
         doNotUpdate = []
         col = []
-        if i < conf._collisionGracePeriod: col = [] # for objects instantiated on top of eachother
+        """
+        if i < conf_collisionGracePeriod: col = [] # for objects instantiated on top of eachother
         else: col = DetectCollisions(objects, i, deltat)
-        if col != [] and conf._debugCollisions:
+        if col != [] and conf_debugCollisions:
             print(f'collisions on iteration {i} for objects {col}')
         if col != []: collision_iterations.append(i)
-        """
         
         
         for pair in col:
@@ -463,17 +463,17 @@ def nbody_coupled_integrator(objects: list[object],
             obj.v_list.append( vk_next(obj.v_list[-1], obj.r_list[-1], blackhole.m, obj.l0, deltat) )
 
             # * stuff for theta 
-            obj.theta_list.append(theta_next(obj.theta_list[-1], obj.l0, obj.r_list[-1], deltat) % (2*pc.pi))
+            obj.theta_list.append(theta_next(obj.theta_list[-1], obj.l0, obj.r_list[-1], deltat) % (2*pi))
 
 
 
             # print(obj.r_list[-1])
             # ~ escape conditions
-            if obj.r_list[-1] < conf._outOfBoundMin or obj.r_list[-1] > conf._outOfBoundMax:
+            if obj.r_list[-1] < conf_outOfBoundMin or obj.r_list[-1] > conf_outOfBoundMax:
 
 
-                if obj.r_list[-1] < conf._outOfBoundMin: print(f'object fell in blackhole, remaining objects before pop : {len(objects)}, iteration number {i}'); obj.IsOut = True
-                if obj.r_list[-1] > conf._outOfBoundMax: print(f'object escape, remaining objects before pop : {len(objects)}, iteration number {i}'); obj.IsOut = True
+                if obj.r_list[-1] < conf_outOfBoundMin: print(f'object fell in blackhole, remaining objects before pop : {len(objects)}, iteration number {i}'); obj.IsOut = True
+                if obj.r_list[-1] > conf_outOfBoundMax: print(f'object escape, remaining objects before pop : {len(objects)}, iteration number {i}'); obj.IsOut = True
 
                 finished_objects.append(obj)
 
@@ -484,6 +484,15 @@ def nbody_coupled_integrator(objects: list[object],
         for obj_to_remove in objects_to_depop:
             objects.remove(obj_to_remove)
             print(f'depop {obj_to_remove}')
+
+
+    # ~ makes sure everything has up to date variables
+    # ^ this is here because when commenting the collision stuff to deactivate it,
+    # ^ the renderer in opengl stops to work.
+    for obj in objects:
+        obj.UpdateVariables(deltat)
+    for obj in finished_objects:
+        obj.UpdateVariables(deltat)
 
     # * writes all remaining objects to the output list
     return (finished_objects, objects, deltat, deltat_list, collision_iterations)
