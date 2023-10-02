@@ -6,7 +6,7 @@ import PhysicsEngine as e
 
 
 import GameSettings as GS
-from GameLogic import GameWin, GameLoss, ElasticCollision
+from GameLogic import GameWin, GameLoss, ElasticCollision, GameBanner
 from utilities import clear_screen
 
 
@@ -310,7 +310,6 @@ class App(moderngl_window.WindowConfig):
         # we decide to stop once the counter goes above a threshold, see next if
         self.counterdeltat += self.deltat
         self.masterCounterdeltat += self.deltat
-        print(self.deltat)
 
 
         # ! that's the run simulation function, and one hell of a thing to implement
@@ -518,6 +517,15 @@ class App(moderngl_window.WindowConfig):
 
         # Move the circles
         self.circle_renderer.update(positions, colors)
+
+
+
+
+
+GameBanner()
+
+inp = input(" > ")
+
 
 
 

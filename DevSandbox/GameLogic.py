@@ -24,7 +24,6 @@ def GameBanner():
     )
 
 
-GameBanner()
 
 
 
