@@ -400,7 +400,7 @@ def nbody_coupled_integrator(objects: list[object],
 
 
         # ~ just to print simulation steps and infos
-        if i %conf_statusPrintModulo == 0:
+        if i %conf_statusPrintModulo == 0 and conf_statusDebug == True:
             print(f' {int(i/steps * 100)} % \t current deltat : {deltat:.5f} \t step time : {(datetime.now() - rem_time)} \t estimated remaining time : {(datetime.now() - rem_time) * (steps-i)}\t active objects {len(objects)}')
         rem_time = datetime.now()
 

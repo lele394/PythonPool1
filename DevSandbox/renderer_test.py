@@ -19,11 +19,19 @@ from math import cos, sin, pi
 class CircleRenderer:
 
     def __init__(self, ctx: moderngl.Context, program: moderngl.Program):
+        """
+        einarf moderngl wizardry, creates position and color buffers
+        to render the circles representing objects in the simulation.
+        
+        Thanks a lot to Einar Forselv for the help in implementing 
+        the render circle and general knowledge about moderngl and mglw
+        
+        """
         self.ctx = ctx
         self.program = program
-        self.max_capacity = 10000 # number of circles
+        self.max_capacity = 10000 # max number of circles
 
-
+        # * buffers initializations with the max capacity
         self.position_data = array('f', [0.0] * 2 * self.max_capacity)
         self.position_buffer = self.ctx.buffer(data=self.position_data)
         # self.color_data = array('f', [1.0] * 3 * self.capacity)
@@ -84,7 +92,7 @@ class CircleRenderer:
 
 
 class BlackholeRenderer:
-
+    """pretty much the same as the circle renderer except it only is for the blackhole"""
     def __init__(self, ctx: moderngl.Context, program: moderngl.Program):
         self.ctx = ctx
         self.program = program
@@ -220,9 +228,15 @@ class App(moderngl_window.WindowConfig):
         self.steps_per_frame = 1
 
         
-
+        # ^ SIMULATION VARIABLES HERE
         #black hole object, please don't touch the mass, projectiles speeds are balanced on it
         self.bh = e.object("Blackhole", 0,0,0,0,10**12)
+
+        self.iteration = 0 #counter for the iteration number
+        self.deltat_per_turn = 10
+
+        self.counterdeltat = 0 #thing that counts the deltat spent since the last turn, needed as deltat changes
+
 
         #your initial projectiles, here just the ship and the target
         self.projs = [
@@ -230,7 +244,7 @@ class App(moderngl_window.WindowConfig):
             e.object("Target", 30, 0, 0, 0.05,  1, 0.5), #blue
         ]
 
-        self.deltat = e.deltaless_deltat(self.projs)
+        self.deltat = e.deltaless_deltat(self.projs) #initialize the deltat for the first run
 
         # ^ just some cool colors that can be used in the simulation
         self.type_colors = {
@@ -258,7 +272,7 @@ class App(moderngl_window.WindowConfig):
     def render(self, time, frame_time):
 
 
-        self.ctx.clear()
+        self.ctx.clear() # clears previous image
 
         # Set ortho projection for circles
         self.circle_program["projection"].write(glm.ortho(
@@ -278,8 +292,54 @@ class App(moderngl_window.WindowConfig):
 
         #! simulation shennanigans =======================================
 
+        # * deltat shall not be calculated if its the 1st iteratio
+        if self.iteration != 0: self.deltat = e.ComputeDeltatT(self.projs, self.deltat);
+
+        #increment the counter, however please note that the elapsed time between turns will not be exact each time
+        # some errors are present that makes it so the deltat keeps on becoming smaller and smaller.
+        # we decide to stop once the counter goes above a threshold, see next if
+        self.counterdeltat += self.deltat
+        print(self.deltat)
+
+
         # ! that's the run simulation function, and one hell of a thing to implement
         (outs, self.projs, self.deltat, dt_list, col_list) = e.nbody_coupled_integrator(self.projs, self.bh, self.steps_per_frame, self.deltat)
+
+
+        if self.counterdeltat >= self.deltat_per_turn: # if enough time has passed since the last turn
+            print(f'time elapsed since last turn {self.counterdeltat}, deltat {self.deltat}')
+            self.counterdeltat = 0 # resets the counter for the next turn
+            inp = input("new round input : (l)aunch (w)ait >")
+
+            if inp == "l":
+                inp = input("   vr vtheta type\n > ")
+                to_add = [] # list to keep the coordinates of the new object
+                while inp != "c" or inp !="cancel":
+                    if inp == "c": break
+                    # splicing?
+                    inp_split = [i for i in inp.split(" ")]
+
+                    ship_id = 0 #should always be 0
+                    ship = self.projs[ship_id]
+
+                    to_add = [float(inp_split[0]), float(inp_split[1])]
+
+                    inp = input(" (c)onfirm or (cancel)")
+
+            if inp == "c":
+                #creates the bullet
+                bullet = e.object(inp_split[2], ship.r, ship.theta, to_add[0], to_add[1], 10**2, 0.02)
+
+                #adds the ship as an initial object it's colliding with
+                bullet.WasColliding.append(ship)
+
+                #adds the bullet into the simulation
+                self.projs.append(
+                       bullet
+                    )
+
+
+
 
 
 
