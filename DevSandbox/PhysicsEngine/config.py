@@ -9,7 +9,7 @@ conf_debugCollisions = True #prints some info when collisions are detected
 
 #dynamic deltat
 conf_computeDeltaClamp = (0 , 5) #(min, max)
-conf_computeDeltaDeltatFactor = 100
+conf_computeDeltaDeltatFactor = 1000
 
 
 #integrator out of bound

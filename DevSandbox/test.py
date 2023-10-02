@@ -1,4 +1,4 @@
-import PhysicsEngine.engine_rev2 as e
+import PhysicsEngine.engine_rev3 as e
 import PhysicsEngine.physicalConstants as pc
 import matplotlib.pyplot as plt
 from math import sqrt, radians, cos, sin
@@ -6,9 +6,9 @@ from math import sqrt, radians, cos, sin
 outOfBound =  40
 inOfBound = 0
 
-steps = 100000
+steps = 600
 
-deltat = 0.01
+deltat = 0.1
 
 
 
@@ -31,12 +31,12 @@ collisions_list = []
 projs = [
    # e.object(7, 0, 0, -0.043, 10**4, 0.05),
     e.object("Heavy", 35, pc.pi, 0, vel, 1, 1), #red
-    e.object("Ship", 35, 0, 0, -vel,  1, 0.1), #blue
+    e.object("Ship", 35, 0, 0, -vel,  1, 1), #blue
 ]
 
 
 
-deltat = e.deltaless_deltat(projs)
+# deltat = e.deltaless_deltat(projs)
 print(f'initial deltat {deltat}')
 
 
@@ -82,15 +82,17 @@ while inp != "q":
     # for p in projs:
         # p.Debug(deltat)
     # print(projs)
-    (outs, projs, deltat, dt_list, col_list) = e.nbody_coupled_integrator(projs, bh, steps, deltat)
-    deltatt_list = deltatt_list+dt_list
-    collisions_list = collisions_list + col_list
-    projectiles = projs + outs
+    # (outs, projs, deltat, dt_list, col_list) = e.nbody_coupled_integrator(projs, bh, steps, deltat)
+    # deltatt_list = deltatt_list+dt_list
+    # collisions_list = collisions_list + col_list
+    # projectiles = projs + outs
     # print(projectiles)
 
     # for p in projectiles:
     #     p.Debug(deltat)
 
+
+    projs, deltat = e.nbody_coupled_integrator(projs, bh, steps, deltat)
 
 
     print(deltat)

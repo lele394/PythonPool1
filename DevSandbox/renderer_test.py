@@ -184,7 +184,7 @@ class App(moderngl_window.WindowConfig):
 
         # ! ================================
         self.theta = 0
-        self.steps_per_frame = 2
+        self.steps_per_frame = 1
 
         vel = 0.03
 
@@ -193,13 +193,12 @@ class App(moderngl_window.WindowConfig):
 
         self.projs = [
             e.object("Ship", 35, e.pi, 0, vel, 1, 1), #red
+            e.object("Heavy", 35, 0, 0, -vel,  1, 1), #blue
             # e.object("orange", 1.7, -1,  0, 10000000000,  1e80, 0.1), #blue
             # e.object("orange", 2, -1,  0, 5.7769,  1e80, 0.1), #blue
-            e.object("Heavy", 35, 0, 0, -vel,  1, 1), #blue
         ]
 
         self.deltat = e.deltaless_deltat(self.projs)
-        self.deltat = 0.1
 
         self.type_colors = {
             "red" : [1, 0, 0],

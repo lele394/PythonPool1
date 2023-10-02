@@ -1,7 +1,23 @@
 from math import *
+from .physicalConstants import pi
+
+import numpy as np
 
 
 
+
+
+
+
+def pol_vel_to_car(vr, vtheta, theta):
+    vx = vr * np.cos(theta) - vtheta * np.sin(theta)
+    vy = vr * np.sin(theta) + vtheta * np.cos(theta)
+    return vx, vy
+
+def car_vel_to_pol(vx, vy, theta):
+    vr = vx * np.cos(theta) + vy * np.sin(theta)
+    vtheta = vy * np.cos(theta) - vx * np.sin(theta)
+    return vr, vtheta
 
 
 
@@ -54,7 +70,6 @@ def DetectCollisions(objects: list[object], i: int, deltat: float):
         #check for particles of indices n-1
         for neighbor in range(point+1, len(objects)):
 
-            if objects[neighbor] in p.WasColliding: print(f'Iteration {i} : Collision detectd on {(point, neighbor)} but were colliding before'); collisions.append("on grace"); continue
             n = objects[neighbor]
             n.UpdateVariables(deltat)
 
@@ -68,10 +83,17 @@ def DetectCollisions(objects: list[object], i: int, deltat: float):
 
             if d < (rad1 + rad2):
 
-                #* check if both objects don't have grace periods
-                #    ^ not here yet
+                if objects[neighbor] in p.WasColliding: print(f'Iteration {i} : Collision detectd on {(point, neighbor)} but were colliding before'); collisions.append("on grace"); continue
                 collisions.append( (point, neighbor) )
-    
+            
+            else :
+                if n in p.WasColliding:
+                    p.WasColliding.remove(n)
+                if p in n.WasColliding:
+                    n.WasColliding.remove(p)
+
+
+
     return collisions
 
 
@@ -174,8 +196,6 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
 
     """
     
-
-
     """
     # ! LAST ONE TO SOMEWHAT WORK LAST TIME
     a_o = objects[pair[0]]
@@ -220,26 +240,24 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
     """
 
 
-    """
-    # ! made in Trigui
-    # Calculate the final velocities in polar coordinates
-    a.r_p.append(((a.mass-b.mass)*a.r_p[-1]+2*b.mass*b.r_p[-1])/(a.mass+b.mass))
-    b.r_p.append(((b.mass-a.mass)*b.r_p[-1]+2*a.mass*a.r_p[-1])/(a.mass+b.mass))
-    """
-    """
-    # Calculate the final angles
-    a.theta_p.append(((a.mass-b.mass)*a.r[-1]*a.theta_p[-1]+2*b.mass*b.r[-1]*b.theta_p[-1])/((a.mass+b.mass)*a.r[-1]))
-    b.theta_p.append(((b.mass-a.mass)*b.r[-1]*b.theta_p[-1]-2*a.mass*a.r[-1]*a.theta_p[-1])/((b.mass+a.mass)*b.r[-1]))
-    """
 
 
     #https://stackoverflow.com/questions/35211114/2d-elastic-ball-collision-physics
 
+
+
+
     a = objects[pair[0]]
     b = objects[pair[1]]
 
-    a.UpdateVariables(deltat)
-    b.UpdateVariables(deltat)
+    a.Debug(deltat)
+    b.Debug(deltat)
+
+    if a in b.WasColliding or b in a.WasColliding: print("no update as they were already colliding");return
+
+
+
+
 
     xa = a.r * cos(a.theta)
     xb = b.r * cos(b.theta)
@@ -247,95 +265,104 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
     ya = a.r * sin(a.theta)
     yb = b.r * sin(b.theta)
 
-    # ! here comes vectorial proj
-    vxa = a.vr * cos(a.theta) - a.vtheta * sin(a.theta)
-    vxb = b.vr * cos(b.theta) - b.vtheta * sin(b.theta)
 
-    vya = a.vr * sin(a.vtheta) + a.vtheta * cos(a.theta)
-    vyb = b.vr * sin(b.vtheta) + b.vtheta * cos(b.theta)
+
+    # ! here comes vectorial proj
+    """
+    vxa = a.vr * cos(a.theta) - a.r * a.vtheta * sin(a.theta)
+    vxb = b.vr * cos(b.theta) - b.r * b.vtheta * sin(b.theta)
+
+    vya = a.vr * sin(a.theta) + a.r * a.vtheta * cos(a.theta)
+    vyb = b.vr * sin(b.theta) + b.r * b.vtheta * cos(b.theta)
+    """
+
+
+    (vxa, vya) = pol_vel_to_car(a.vr, a.vtheta, a.theta)
+    (vxb, vyb) = pol_vel_to_car(b.vr, b.vtheta, b.theta)
+
+
 
 
 
     #for a :
-    dpa = DotProduct( vxa-vxb , vya-vyb,  xa-xb , ya-yb  )
+    dpa = np.dot( (vxa-vxb , vya-vyb),  (xa-xb , ya-yb)  )
     #on r
-    nbma = sqrt( (xa-xb)**2 - (ya-yb)**2 )
-    nvxa = vxa - (2*b.m)/(a.m + b.m) * (dpa / abs(nbma)**2 ) * (xa-xb)
+    namb = sqrt( (xa-xb)**2 + (ya-yb)**2 )
+    nvxa = vxa - (2*b.m)/(a.m + b.m) * (dpa / namb**2 ) * (xa-xb)
     #on theta
-    nvya = vxa - (2*b.m)/(a.m + b.m) * (dpa / abs(nbma)**2) * (ya-yb)
+    nvya = vya - (2*b.m)/(a.m + b.m) * (dpa / namb**2) * (ya-yb)
 
 
     #for b :
-    dpb = DotProduct( vxb-vxa , vyb-vya,  xb-xa , yb-ya  )
+    dpb = np.dot( (vxb-vxa , vyb-vya),  (xb-xa , yb-ya)  )
     #on r
-    namb = sqrt( (xb-xa)**2 - (yb-ya)**2 )
-    nvxb = vxb - (2*a.m)/(a.m + b.m) * (dpb / abs(namb)**2 ) * (xb-xa)
+    nbma = sqrt( (xb-xa)**2 + (yb-ya)**2 )
+    nvxb = vxb - (2*a.m)/(a.m + b.m) * (dpb / nbma**2 ) * (xb-xa)
     #on theta
-    nvyb = vyb - (2*a.m)/(a.m + b.m) * (dpb / abs(namb)**2) * (yb-ya)
+    nvyb = vyb - (2*a.m)/(a.m + b.m) * (dpb / nbma**2) * (yb-ya)
 
     # ! vectorial proj lolilol
+    """
     nvra = nvxa * cos(a.theta) + nvya * sin(a.theta)
     nvrb = nvxb * cos(b.theta) + nvyb * sin(b.theta)
 
-    nvta = nvya * cos(a.theta) - nvxa * sin(a.theta)
-    nvtb = nvyb * cos(b.theta) - nvya * sin(b.theta)
+    nvta = (nvya * cos(a.theta) - nvxa * sin(a.theta)) / a.r
+    nvtb = (nvyb * cos(b.theta) - nvxb * sin(b.theta)) / b.r
+    """
+
+    (nvra, nvta) = car_vel_to_pol(nvxa, nvya, a.theta)
+    (nvrb, nvtb) = car_vel_to_pol(nvxb, nvyb, b.theta)
 
 
 
-    objects[pair[0]].vr = nvra
-    objects[pair[0]].vtheta = nvta
+    a.vr = nvra
+    a.vtheta = nvta
 
-    objects[pair[1]].vr = nvrb
-    objects[pair[1]].vtheta = nvtb
+    b.vr = nvrb
+    b.vtheta = nvtb
 
-    objects[pair[0]].r_list.append(a.r_list[-1] +  nvra * deltat)
-    objects[pair[1]].r_list.append(b.r_list[-1] +  nvrb * deltat)
+    a.r_list.append(a.r_list[-1] +  nvra * deltat)
+    b.r_list.append(b.r_list[-1] +  nvrb * deltat)
 
-    objects[pair[0]].theta_list.append(a.theta_list[-1] + nvra * deltat)
-    objects[pair[1]].theta_list.append(b.theta_list[-1] + nvrb * deltat)
+    a.theta_list.append(    a.theta_list[-1] + nvta * deltat    )
+    b.theta_list.append(    b.theta_list[-1] + nvtb * deltat    )
+
+
+    a.v_list.append((a.r_list[-1] - a.r_list[-2])/deltat)
+    b.v_list.append((b.r_list[-1] - b.r_list[-2])/deltat)
+
+
+
+
+
+
+
+
+
+
+
+    print( nvra, nvta )
+    print( nvrb, nvtb )
+
 
     #updates l0s
-    objects[pair[0]].Updatel0()
-    objects[pair[1]].Updatel0()
+    a.Updatel0()
+    b.Updatel0()
 
     #add eachother to the colliding list
-    objects[pair[0]].WasColliding.append(objects[pair[1]])
-    objects[pair[1]].WasColliding.append(objects[pair[0]])
+    a.WasColliding.append(objects[pair[1]])
+    b.WasColliding.append(objects[pair[0]])
+
+    a.UpdateVariables(deltat)
+    b.UpdateVariables(deltat)
+
+    a.Debug(deltat)
+    b.Debug(deltat)
+    # input()
 
 
 
 
-    return
+    # return
 
 
-
-def UpdateAddObjectsInvulnerabilities(pair: (int, int), objects: list[object],  deltat: float):
-    
-
-    a = objects[pair[0]]
-    b = objects[pair[1]]
-    
-    #val alongside r and theta
-    val_r = sqrt(a.v_list[-1]**2 + b.v_list[-1]**2)
-    val_theta = sqrt(a.r**2 * a.GetTheta_p(deltat)**2 + b.r**2 * b.GetTheta_p(deltat)**2)
-
-
-    invulnerability = abs((a.radius + b.radius) / max(val_r, val_theta))
-
-    # ! override top calculation, bd idea b oh well
-    invulnerability = 0
-
-    # for a object : #! problem here
-    objects[pair[0]].InvulnerabiltyTo.append( [b, invulnerability] )
-
-    # for b object :
-    objects[pair[1]].InvulnerabiltyTo.append( [a, invulnerability] )
-
-
-def UpdateObjectsInvulnerabilities(object: object, deltat: float):
-
-    for invul in object.InvulnerabiltyTo:
-        # invul[1] -= deltat
-        invul[1] -= 1 # ! because of override in prev function
-    
-    object.InvulnerabiltyTo = [ i for i in object.InvulnerabiltyTo if i[1]>0]
