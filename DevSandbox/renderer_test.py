@@ -142,13 +142,34 @@ class App(moderngl_window.WindowConfig):
     resource_dir = 'shaders'
 
     def __init__(self, **kwargs):
+        """
+        initialisation of the window, and all the rest
+        """
+
+
         super().__init__(**kwargs)
 
+        # * aesthetics~~ colors and stuff, customize to make it look CoOoOoLlLl
         self.bg_color = [33/255, 33/255, 33/255]
         self.fade_off = 0.01
         self.color_distance_treshold = 0.25
+        """
+        carefull, background color is implemented in fade off, making it a shitty 
+        idea as it does not have its own display shader. the distance between colors is 
+        therefore *extremely* broken
+        # todo custom background shader
 
 
+        maybe starry background? oopsies
+        idea :
+            just put some random dots every now and then in one frame, they'll fade with the 
+            darken shader
+        
+        """
+
+
+
+        # ! creating shader programs =====================================
         self.blackhole_program = self.load_program(
             vertex_shader='blackhole_vert.glsl',
             fragment_shader='blackhole_frag.glsl',
@@ -159,11 +180,6 @@ class App(moderngl_window.WindowConfig):
             fragment_shader='circle_frag.glsl',
         )
 
-        self.circle_renderer = CircleRenderer(self.ctx, self.circle_program)
-
-        self.blackhole_renderer = BlackholeRenderer(self.ctx, self.blackhole_program)
-        self.blackhole_renderer.setup( )
-
         self.blit_program = self.load_program(
             vertex_shader='blit_vert.glsl',
             fragment_shader='blit_frag.glsl',
@@ -172,37 +188,51 @@ class App(moderngl_window.WindowConfig):
             vertex_shader='darken_vert.glsl',
             fragment_shader='darken_frag.glsl',
         )
+        # ! ==============================================================
+
+
+        # * setting up shaders uniforms, renderers and display geometry
+        # ~ blit 
+        self.blit_program["bg_color"] = self.bg_color
+        self.blit_program["color_distance_treshold"] = self.color_distance_treshold
+
+        # ~ darkener
+        self.darken_program["bg_color"] = self.bg_color
+        self.darken_program["fade_off"] = self.fade_off
+
+        # ~ renderers setup
+        self.circle_renderer = CircleRenderer(self.ctx, self.circle_program)
+
+        self.blackhole_renderer = BlackholeRenderer(self.ctx, self.blackhole_program)
+        self.blackhole_renderer.setup( )
+
+        # ~ display quad geometry
         self.quad = geometry.quad_fs()
 
         self.fbo = self.ctx.framebuffer(
             color_attachments=[self.ctx.texture(self.wnd.size, components=4)],
         )
-
-        self.blit_program["bg_color"] = self.bg_color
-        self.blit_program["color_distance_treshold"] = self.color_distance_treshold
-
-        self.darken_program["bg_color"] = self.bg_color
-        self.darken_program["fade_off"] = self.fade_off
-
+        # * ======================================================
 
         # ! ================================
-        self.theta = 0
+
+        # todo change to include vars from GameSettings.py
         self.steps_per_frame = 1
 
-        vel = 0.03
+        
 
-
+        #black hole object, please don't touch the mass, projectiles speeds are balanced on it
         self.bh = e.object("Blackhole", 0,0,0,0,10**12)
 
+        #your initial projectiles, here just the ship and the target
         self.projs = [
-            e.object("Ship", 45, e.pi, 0, vel, 1, 1), #red
-            e.object("Heavy", 45, 0, 0, -vel,  1, 1), #blue
-            e.object("orange", 20, 0,  0, 0.01,  1, 0.1), #blue
-            # e.object("orange", 2, -1,  0, 5.7769,  1e80, 0.1), #blue
+            e.object("Ship", 30, e.pi, 0, -0.05, 1, 0.5), #red
+            e.object("Target", 30, 0, 0, 0.05,  1, 0.5), #blue
         ]
 
         self.deltat = e.deltaless_deltat(self.projs)
 
+        # ^ just some cool colors that can be used in the simulation
         self.type_colors = {
             "red" : [1, 0, 0],
             "green": [0, 1, 0],
@@ -218,7 +248,7 @@ class App(moderngl_window.WindowConfig):
             "Ship": [0,1,0],
             "Heavy": [1, 0, 0],
             "Light": [0, 0, 1],
-            "Target": [0.5, 1, 0]
+            "Target": [0.92, 0.04, 0.04]
         }
 
 
@@ -248,16 +278,15 @@ class App(moderngl_window.WindowConfig):
 
         #! simulation shennanigans =======================================
 
-        # r = 200
-        # x = r * cos(self.theta) +self.window_size[0]/2
-        # y = r * sin(self.theta) +self.window_size[1]/2
-        # self.theta += 0.006
-        # self.update_positions(x, y)
-
-
+        # ! that's the run simulation function, and one hell of a thing to implement
         (outs, self.projs, self.deltat, dt_list, col_list) = e.nbody_coupled_integrator(self.projs, self.bh, self.steps_per_frame, self.deltat)
 
 
+
+        # & from here we're converting object positions to cartesian 
+        # & so it can be understood by the shader.
+        # & could probably pass it in and parallelize it, but oh well
+        # & it ain't that heavy *yet*
         #make position list
         x_l = []
         y_l = []
@@ -292,14 +321,11 @@ class App(moderngl_window.WindowConfig):
         self.update_positions_and_colors(x_l, y_l, col_l, number_of_circles)
 
 
-
-
-
-
-
         #! end simulation shennanigans ===================================
 
 
+
+        # *displaying STUFF ========================================
 
         #render circles
         self.circle_renderer.render(number_of_circles)
@@ -312,6 +338,12 @@ class App(moderngl_window.WindowConfig):
 
         #render blackhole
         self.blackhole_renderer.render()
+        # * =========================================================
+        
+        # debug breakout when collisions happen. leaving it here
+        # cuz might need it if i add some explosion stuff
+        #like 2D pew pew with circles around collision points
+        # ah well tht'd be another shder but y not
 
         # if outs != []:
         #     input("huh oh")
@@ -319,7 +351,7 @@ class App(moderngl_window.WindowConfig):
 
 
     def update_positions_and_colors(self, x: list[float], y: list[float], colors: list[float], number_of_circles: int):
-        
+        """cretes positions list tht fit in the sahder buffer"""
         positions = [0, 0] * len(x)
         for i in range(len(x)):
             positions[i * 2] = x[i]
