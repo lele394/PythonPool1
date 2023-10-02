@@ -54,8 +54,7 @@ def DetectCollisions(objects: list[object], i: int, deltat: float):
         #check for particles of indices n-1
         for neighbor in range(point+1, len(objects)):
 
-            if objects[neighbor] in invulnerable_to: print(f'Iteration {i} : Collision detectd on {(point, neighbor)} but are on grace period'); collisions.append("on grace"); continue
-
+            if objects[neighbor] in p.WasColliding: print(f'Iteration {i} : Collision detectd on {(point, neighbor)} but were colliding before'); collisions.append("on grace"); continue
             n = objects[neighbor]
             n.UpdateVariables(deltat)
 
@@ -248,39 +247,40 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
     ya = a.r * sin(a.theta)
     yb = b.r * sin(b.theta)
 
-    vxa = a.vr * cos(a.vtheta)
-    vxb = b.vr * cos(b.vtheta)
+    # ! here comes vectorial proj
+    vxa = a.vr * cos(a.theta) - a.vtheta * sin(a.theta)
+    vxb = b.vr * cos(b.theta) - b.vtheta * sin(b.theta)
 
-    vya = a.vr * sin(a.vtheta)
-    vyb = b.vr * sin(b.vtheta)
+    vya = a.vr * sin(a.vtheta) + a.vtheta * cos(a.theta)
+    vyb = b.vr * sin(b.vtheta) + b.vtheta * cos(b.theta)
 
 
 
     #for a :
     dpa = DotProduct( vxa-vxb , vya-vyb,  xa-xb , ya-yb  )
     #on r
-    axmba = xa-xb
-    nvxa = vxa - (2*b.m)/(a.m + b.m) * (dpa / abs(axmba)**2 ) * axmba
+    nbma = sqrt( (xa-xb)**2 - (ya-yb)**2 )
+    nvxa = vxa - (2*b.m)/(a.m + b.m) * (dpa / abs(nbma)**2 ) * (xa-xb)
     #on theta
-    aymby = ya-yb
-    nvya = vxa - (2*b.m)/(a.m + b.m) * (dpa / abs(aymby)**2) * aymby
+    nvya = vxa - (2*b.m)/(a.m + b.m) * (dpa / abs(nbma)**2) * (ya-yb)
 
 
     #for b :
     dpb = DotProduct( vxb-vxa , vyb-vya,  xb-xa , yb-ya  )
     #on r
-    xbmxa = xb-xa
-    nvxb = vxb - (2*a.m)/(a.m + b.m) * (dpb / abs(xbmxa)**2 ) * xbmxa
+    namb = sqrt( (xb-xa)**2 - (yb-ya)**2 )
+    nvxb = vxb - (2*a.m)/(a.m + b.m) * (dpb / abs(namb)**2 ) * (xb-xa)
     #on theta
-    bymay = yb-ya
-    nvyb = vyb - (2*a.m)/(a.m + b.m) * (dpb / abs(bymay)**2) * bymay
+    nvyb = vyb - (2*a.m)/(a.m + b.m) * (dpb / abs(namb)**2) * (yb-ya)
+
+    # ! vectorial proj lolilol
+    nvra = nvxa * cos(a.theta) + nvya * sin(a.theta)
+    nvrb = nvxb * cos(b.theta) + nvyb * sin(b.theta)
+
+    nvta = nvya * cos(a.theta) - nvxa * sin(a.theta)
+    nvtb = nvyb * cos(b.theta) - nvya * sin(b.theta)
 
 
-    nvra = sqrt(nvxa**2 + nvya**2)
-    nvta = atan(ya / xa)
-
-    nvrb = sqrt(nvxb**2 + nvyb**2)
-    nvtb = atan(yb / xb)
 
     objects[pair[0]].vr = nvra
     objects[pair[0]].vtheta = nvta
@@ -288,11 +288,11 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
     objects[pair[1]].vr = nvrb
     objects[pair[1]].vtheta = nvtb
 
-    objects[pair[0]].r_list.append(nvra * deltat)
-    objects[pair[1]].r_list.append(nvrb * deltat)
+    objects[pair[0]].r_list.append(a.r_list[-1] +  nvra * deltat)
+    objects[pair[1]].r_list.append(b.r_list[-1] +  nvrb * deltat)
 
-    objects[pair[0]].theta_list.append(nvra * deltat)
-    objects[pair[1]].theta_list.append(nvrb * deltat)
+    objects[pair[0]].theta_list.append(a.theta_list[-1] + nvra * deltat)
+    objects[pair[1]].theta_list.append(b.theta_list[-1] + nvrb * deltat)
 
     #updates l0s
     objects[pair[0]].Updatel0()

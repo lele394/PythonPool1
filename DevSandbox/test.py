@@ -1,5 +1,5 @@
-import engine_rev2 as e
-import physicalConstants as pc
+import PhysicsEngine.engine_rev2 as e
+import PhysicsEngine.physicalConstants as pc
 import matplotlib.pyplot as plt
 from math import sqrt, radians, cos, sin
 
@@ -30,9 +30,8 @@ collisions_list = []
 
 projs = [
    # e.object(7, 0, 0, -0.043, 10**4, 0.05),
-    e.object("Heavy", 35, 0, 0, vel, 1e1, 1), #red
-    e.object("Ship", 35, 0, 0, -vel,  1e80, 0.1), #blue
-    e.object("Explosive", 32, 0, 0, -vel,  1e80, 0.1), #blue
+    e.object("Heavy", 35, pc.pi, 0, vel, 1, 1), #red
+    e.object("Ship", 35, 0, 0, -vel,  1, 0.1), #blue
 ]
 
 

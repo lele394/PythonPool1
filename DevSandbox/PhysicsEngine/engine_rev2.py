@@ -198,7 +198,7 @@ def ComputeDeltatT(objects: list[object], prevdeltat: float):
         new minimum deltat that can be used in the simulation
     """
 
-    dt_list = []
+    dt_list = [0.1] #! emergency override
     # * part about objects being close to the blackhole
     for object in objects:
         dt = 2 * pi * object.r_list[-1] / (conf_computeDeltaDeltatFactor * object.speed_norm(prevdeltat))
@@ -232,8 +232,11 @@ def deltaless_deltat(objects, override=""):
         float
         deltat
     """
+
+
+
     if override != "": return override
-    dt_list = []
+    dt_list = [0.001] #! emergency override
     for object in objects:
         v = sqrt(object.v_list[-1]**2+object.r_list[-1]**2*object.vtheta**2)
         dt = 2 * pi * object.r_list[-1] / (conf_computeDeltaDeltatFactor * v)
@@ -386,6 +389,12 @@ def nbody_coupled_integrator(objects: list[object],
     #for each step
     for i in range(steps):
 
+        
+        
+
+
+
+
         # ~ just to print simulation steps and infos
         if i %conf_statusPrintModulo == 0:
             print(f' {int(i/steps * 100)} % \t current deltat : {deltat:.5f} \t step time : {(datetime.now() - rem_time)} \t estimated remaining time : {(datetime.now() - rem_time) * (steps-i)}\t active objects {len(objects)}')
@@ -416,7 +425,6 @@ def nbody_coupled_integrator(objects: list[object],
         # ~ Collision stuff hereeee
         doNotUpdate = []
         col = []
-        """
         if i < conf_collisionGracePeriod: col = [] # for objects instantiated on top of eachother
         else: col = DetectCollisions(objects, i, deltat)
         if col != [] and conf_debugCollisions:
@@ -427,6 +435,7 @@ def nbody_coupled_integrator(objects: list[object],
         for pair in col:
              if  not( pair == "on grace"):update_colliding_objects(pair, objects, deltat)
 
+        """
         for pair in col:
             if  not( pair == "on grace"):UpdateAddObjectsInvulnerabilities(pair, objects, deltat)
 

@@ -6,6 +6,7 @@ import PhysicsEngine as e
 
 
 
+
 from array import array
 
 import glm
@@ -20,7 +21,7 @@ class CircleRenderer:
     def __init__(self, ctx: moderngl.Context, program: moderngl.Program):
         self.ctx = ctx
         self.program = program
-        self.capacity = 3
+        self.capacity = 2
 
 
         self.position_data = array('f', [0.0] * 2 * self.capacity)
@@ -79,6 +80,59 @@ class CircleRenderer:
 
 
 
+class BlackholeRenderer:
+
+    def __init__(self, ctx: moderngl.Context, program: moderngl.Program):
+        self.ctx = ctx
+        self.program = program
+        self.capacity = 1
+
+
+        self.position_data = array('f', [0, 0])
+        self.position_buffer = self.ctx.buffer(data=self.position_data)
+        # self.color_data = array('f', [1.0] * 3 * self.capacity)
+        self.color_data = array('f', [1.0, 1.0, 1.0])
+        self.color_buffer = self.ctx.buffer(data=self.color_data)
+
+        self.vao = self.ctx.vertex_array(
+            self.program,
+            [
+                (self.position_buffer, '2f', 'in_vert'),
+                (self.color_buffer, '3f', 'in_color'),
+            ],
+        )
+
+    def setup(self):
+        """setup blackhole"""
+
+
+        self.position_buffer.write(self.position_data)
+        self.color_buffer.write(self.color_data)
+
+    def render(self):
+        self.ctx.enable(moderngl.PROGRAM_POINT_SIZE)
+        self.vao.render(moderngl.POINTS, self.capacity)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class App(moderngl_window.WindowConfig):
     window_size = 900, 900
     aspect_ratio = 1.0
@@ -92,11 +146,20 @@ class App(moderngl_window.WindowConfig):
         self.color_distance_treshold = 0.25
 
 
+        self.blackhole_program = self.load_program(
+            vertex_shader='blackhole_vert.glsl',
+            fragment_shader='blackhole_frag.glsl',
+        )
+
         self.circle_program = self.load_program(
             vertex_shader='circle_vert.glsl',
             fragment_shader='circle_frag.glsl',
         )
+
         self.circle_renderer = CircleRenderer(self.ctx, self.circle_program)
+
+        self.blackhole_renderer = BlackholeRenderer(self.ctx, self.blackhole_program)
+        self.blackhole_renderer.setup( )
 
         self.blit_program = self.load_program(
             vertex_shader='blit_vert.glsl',
@@ -129,13 +192,14 @@ class App(moderngl_window.WindowConfig):
         self.bh = e.object("Blackhole", 0,0,0,0,10**12)
 
         self.projs = [
-            e.object("cyan", 35, 1, 0, 0.019, 1e1, 1), #red
-            e.object("Heavy", 35, -1,  0, -vel,  1e80, 0.1), #blue
-            e.object("Ship", 32, 0, 0, -vel,  1e80, 0.1), #blue
+            e.object("Ship", 35, e.pi, 0, vel, 1, 1), #red
+            # e.object("orange", 1.7, -1,  0, 10000000000,  1e80, 0.1), #blue
+            # e.object("orange", 2, -1,  0, 5.7769,  1e80, 0.1), #blue
+            e.object("Heavy", 35, 0, 0, -vel,  1, 1), #blue
         ]
 
         self.deltat = e.deltaless_deltat(self.projs)
-
+        self.deltat = 0.1
 
         self.type_colors = {
             "red" : [1, 0, 0],
@@ -145,13 +209,14 @@ class App(moderngl_window.WindowConfig):
             "pink": [1, 0, 1],
             "white":[1, 1, 1],
             "yellow": [1, 1, 0],
-            "orange": [0.08, 1, 1],
+            "orange": [1, 0.5, 0],
             "neongreen": [0.31, 0.92, 1],
             "black": [0, 0, 0],
 
             "Ship": [0,1,0],
             "Heavy": [1, 0, 0],
-            "Light": [0, 0, 1]
+            "Light": [0, 0, 1],
+            "Target": [0.5, 1, 0]
         }
 
 
@@ -159,14 +224,18 @@ class App(moderngl_window.WindowConfig):
 
 
     def render(self, time, frame_time):
+
+
         self.ctx.clear()
 
-        # Set ortho projection
+        # Set ortho projection for circles
         self.circle_program["projection"].write(glm.ortho(
             0, self.wnd.width,
             0, self.wnd.height,
             -1, 1,
         ))
+
+
 
 
         # Darken the previous frame
@@ -226,14 +295,21 @@ class App(moderngl_window.WindowConfig):
 
 
 
-
+        #render circles
         self.circle_renderer.render()
+
 
         # Blit framebuffer to screen
         self.ctx.screen.use()
         self.fbo.color_attachments[0].use(location=0)
         self.quad.render(self.blit_program)
 
+        #render blackhole
+        self.blackhole_renderer.render()
+
+        if outs != []:
+            input("huh oh")
+        
 
 
     def update_positions_and_colors(self, x: list[float], y: list[float], colors: list[float]):

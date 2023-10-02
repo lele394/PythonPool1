@@ -3,7 +3,7 @@
 conf_statusPrintModulo = 100000
 
 #collision grace period
-conf_collisionGracePeriod = 2 #number of steps where collisions are not checked
+conf_collisionGracePeriod = 0 #number of steps where collisions are not checked
 conf_debugCollisions = True #prints some info when collisions are detected
 
 
