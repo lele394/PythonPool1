@@ -372,7 +372,7 @@ def nbody_coupled_integrator(objects: list[object],
     """
     does everything
     """
-    print(f'\n\n STARTING SIMULATION \n\n')
+    # print(f'\n\n STARTING SIMULATION \n\n')
     
 
     # objects that are out of the simulation
@@ -502,8 +502,9 @@ def nbody_coupled_integrator(objects: list[object],
         obj.UpdateVariables(deltat)
 
     # * writes all remaining objects to the output list
-    return (finished_objects, objects, deltat, deltat_list, collision_iterations)
+    return (finished_objects, objects, deltat, deltat_list, collision_iterations, col)
     #                                   ^ deltat is returned cuz needed to initiate nextstep
+    #                                                                              ^ col returned here to get the last collisions pair
 
 
 

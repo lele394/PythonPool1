@@ -5,6 +5,10 @@ import PhysicsEngine as e
 
 
 
+import GameSettings as GS
+from GameLogic import GameWin, GameLoss, ElasticCollision
+from utilities import clear_screen
+
 
 
 from array import array
@@ -136,7 +140,13 @@ class BlackholeRenderer:
 
 
 
-
+def addCoordinatesToList(l, a, b):
+    l.append(
+        (
+            a.r, a.theta,
+            b.r, b.theta
+        )
+    )
 
 
 
@@ -225,7 +235,7 @@ class App(moderngl_window.WindowConfig):
         # ! ================================
 
         # todo change to include vars from GameSettings.py
-        self.steps_per_frame = 1
+        self.steps_per_frame = GS.steps_per_frame
 
         
         # ^ SIMULATION VARIABLES HERE
@@ -236,7 +246,7 @@ class App(moderngl_window.WindowConfig):
         self.deltat_per_turn = 10
 
         self.counterdeltat = 0 #thing that counts the deltat spent since the last turn, needed as deltat changes
-
+        self.masterCounterdeltat = 0
 
         #your initial projectiles, here just the ship and the target
         self.projs = [
@@ -299,17 +309,106 @@ class App(moderngl_window.WindowConfig):
         # some errors are present that makes it so the deltat keeps on becoming smaller and smaller.
         # we decide to stop once the counter goes above a threshold, see next if
         self.counterdeltat += self.deltat
+        self.masterCounterdeltat += self.deltat
         print(self.deltat)
 
 
         # ! that's the run simulation function, and one hell of a thing to implement
-        (outs, self.projs, self.deltat, dt_list, col_list) = e.nbody_coupled_integrator(self.projs, self.bh, self.steps_per_frame, self.deltat)
+        (outs, self.projs, self.deltat, dt_list, col_list, col_pairs) = e.nbody_coupled_integrator(self.projs, self.bh, self.steps_per_frame, self.deltat)
+
+        explosions_locations = [] # for potential future rendering of collisions
+
+        #check for gamerules collisions
+        for pair in col_pairs:
+            a = self.projs[pair[0]]
+            b = self.projs[pair[1]]
 
 
+            # * please refer to GameSettings.py for the truthtable
+            match a.type:
+                case "Heavy":
+                    match b.type:
+                        case "Light":
+                            #destroy both objects by removing them of the simulation
+                            self.projs.reomve(a)
+                            self.projs.reomve(b)
+                            addCoordinatesToList(explosions_locations, a, b)
+                        
+                        case "Heavy" | "Ship" | "Target":
+                            ElasticCollision()
+
+                        case _:#undetermined case
+                            print(f'could not determine the type of collision for {(a.type, b.type)}, are you using debug colors as types?')
+
+                case "Light":
+                    match b.type:
+                        case "Light":
+                            #destroy both objects by removing them of the simulation
+                            self.projs.reomve(a)
+                            self.projs.reomve(b)
+                            addCoordinatesToList(explosions_locations, a, b)  
+
+                        case "Heavy":
+                            #destroy both objects by removing them of the simulation
+                            self.projs.reomve(a)
+                            self.projs.reomve(b)
+                            addCoordinatesToList(explosions_locations, a, b)    
+
+                        case "Target":
+                            GameWin("LT", self.masterCounterdeltat)  
+
+                        case "Ship":
+                            GameLoss("LS")               
+
+                        case _: #undetermined case
+                            print(f'could not determine the type of collision for {(a.type, b.type)}, are you using debug colors as types?')
+
+                case "Target":
+                    match b.type:
+                        case "Light":
+                            GameWin("LT", self.masterCounterdeltat)
+
+                        case "Ship":
+                            GameWin("TS", self.masterCounterdeltat)
+
+                        case "Heavy":
+                            ElasticCollision()
+
+                        case _: #undetermined case
+                            print(f'could not determine the type of collision for {(a.type, b.type)}, are you using debug colors as types?')
+
+                case "Ship":
+                    match b.type:
+                        case "Light":
+                            GameLoss("LS")
+
+                        case "Target":
+                            GameWin("TS", self.masterCounterdeltat)
+
+                        case "Heavy":
+                            ElasticCollision()
+                            
+                        case _: #undetermined case
+                            print(f'could not determine the type of collision for {(a.type, b.type)}, are you using debug colors as types?')
+
+
+                case _: #undetermined case
+                    print(f'could not determine the type of collision for {(a.type, b.type)}, are you using debug colors as types?')
+
+
+
+
+
+
+
+        # * turn loop with input management
         if self.counterdeltat >= self.deltat_per_turn: # if enough time has passed since the last turn
             print(f'time elapsed since last turn {self.counterdeltat}, deltat {self.deltat}')
             self.counterdeltat = 0 # resets the counter for the next turn
             inp = input("new round input : (l)aunch (w)ait >")
+
+            if inp =="q":
+                quit()
 
             if inp == "l":
                 inp = input("   vr vtheta type\n > ")

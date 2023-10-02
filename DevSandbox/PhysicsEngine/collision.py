@@ -52,7 +52,6 @@ def DetectCollisions(objects: list[object], i: int, deltat: float):
     # master = [ (r[i], theta[i]) for i in range(len(r)) ]
 
 
-    # todo potential opportunity for parallelisation (glsl lol?)
     # check for each particles
     for point in range(len(objects)):
         p = objects[point]
