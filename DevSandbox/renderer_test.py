@@ -21,13 +21,13 @@ class CircleRenderer:
     def __init__(self, ctx: moderngl.Context, program: moderngl.Program):
         self.ctx = ctx
         self.program = program
-        self.capacity = 2
+        self.max_capacity = 10000 # number of circles
 
 
-        self.position_data = array('f', [0.0] * 2 * self.capacity)
+        self.position_data = array('f', [0.0] * 2 * self.max_capacity)
         self.position_buffer = self.ctx.buffer(data=self.position_data)
         # self.color_data = array('f', [1.0] * 3 * self.capacity)
-        self.color_data = array('f', [1.0, 0.5, 0] * self.capacity)
+        self.color_data = array('f', [1.0, 0.5, 0] * self.max_capacity)
         self.color_buffer = self.ctx.buffer(data=self.color_data)
 
         self.vao = self.ctx.vertex_array(
@@ -40,17 +40,20 @@ class CircleRenderer:
 
 
 
+
+
     def update(self, positions, colors ):
         """Update circle positions"""
         
 
-        for i in range(self.capacity):
+        for i in range(int(len(positions) / 2)): # x and y for positions so divide by 2
             """
             position_data = [x1, y1, x2, y2, ..., xn, yn]
             color_data = [r1, g1, b1, r2, g2, b2, ..., rn, gn, bn]
 
             """
             # Position data
+
             self.position_data[i * 2] = positions[i * 2]
             self.position_data[i * 2 + 1] = positions[ i * 2 + 1]
 
@@ -62,9 +65,9 @@ class CircleRenderer:
         self.position_buffer.write(self.position_data)
         self.color_buffer.write(self.color_data)
 
-    def render(self):
+    def render(self, number_of_circles):
         self.ctx.enable(moderngl.PROGRAM_POINT_SIZE)
-        self.vao.render(moderngl.POINTS, self.capacity)
+        self.vao.render(moderngl.POINTS, number_of_circles)
 
 
 
@@ -192,9 +195,9 @@ class App(moderngl_window.WindowConfig):
         self.bh = e.object("Blackhole", 0,0,0,0,10**12)
 
         self.projs = [
-            e.object("Ship", 35, e.pi, 0, vel, 1, 1), #red
-            e.object("Heavy", 35, 0, 0, -vel,  1, 1), #blue
-            # e.object("orange", 1.7, -1,  0, 10000000000,  1e80, 0.1), #blue
+            e.object("Ship", 45, e.pi, 0, vel, 1, 1), #red
+            e.object("Heavy", 45, 0, 0, -vel,  1, 1), #blue
+            e.object("orange", 20, 0,  0, 0.01,  1, 0.1), #blue
             # e.object("orange", 2, -1,  0, 5.7769,  1e80, 0.1), #blue
         ]
 
@@ -254,17 +257,21 @@ class App(moderngl_window.WindowConfig):
 
         (outs, self.projs, self.deltat, dt_list, col_list) = e.nbody_coupled_integrator(self.projs, self.bh, self.steps_per_frame, self.deltat)
 
+
         #make position list
         x_l = []
         y_l = []
         master_projs = self.projs + outs
+
+        number_of_circles = len(master_projs)
+
+
         for i in range(len(master_projs)):
 
             obj = master_projs[i]
 
             r = obj.r
             theta = obj.theta
-
 
             x = r*10 * cos(theta) +self.window_size[0]/2
             y = r*10 * sin(theta) +self.window_size[1]/2
@@ -282,7 +289,7 @@ class App(moderngl_window.WindowConfig):
 
 
         #update colors and positions
-        self.update_positions_and_colors(x_l, y_l, col_l)
+        self.update_positions_and_colors(x_l, y_l, col_l, number_of_circles)
 
 
 
@@ -295,7 +302,7 @@ class App(moderngl_window.WindowConfig):
 
 
         #render circles
-        self.circle_renderer.render()
+        self.circle_renderer.render(number_of_circles)
 
 
         # Blit framebuffer to screen
@@ -306,12 +313,12 @@ class App(moderngl_window.WindowConfig):
         #render blackhole
         self.blackhole_renderer.render()
 
-        if outs != []:
-            input("huh oh")
+        # if outs != []:
+        #     input("huh oh")
         
 
 
-    def update_positions_and_colors(self, x: list[float], y: list[float], colors: list[float]):
+    def update_positions_and_colors(self, x: list[float], y: list[float], colors: list[float], number_of_circles: int):
         
         positions = [0, 0] * len(x)
         for i in range(len(x)):
