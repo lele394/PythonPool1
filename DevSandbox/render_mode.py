@@ -524,7 +524,42 @@ class App(moderngl_window.WindowConfig):
 
 GameBanner()
 
+
+# do something about credits or something
+# lil menu, yk the drill
+# start game and input velcoity should be put here aswell
+
+
 inp = input(" > ")
+
+
+
+
+# some stuff to do :
+#     well there's the thing about setting defult values to projectiles
+#     and default config to start a game
+
+#     todo OUT OF BOUND IS NOT IMPLEMENTED YET 
+
+#     story telling and all
+
+#     todo also the damn copy paste of everything here as a console thingy
+    # prob just gonna print the shit out of object.debug to the console
+
+    # also recoil and out of bound comebacks maybe
+
+    # todo inventory for the number of missiles fired
+
+    # inelastic collisions and debris could be fun, but need to pass a radius
+    # to the shader sooooooo...................
+
+    # todo testing if all exit conditions work? someone? hello?????
+
+    # background and polar reticle could be quite funny
+
+    # todo check variables that can be put in the config file
+
+    # START REPORT???????
 
 
 
