@@ -530,7 +530,11 @@ class App(moderngl_window.WindowConfig):
                 
                 to_add = [] # list to keep the coordinates of the new object
                 while inp != "c" or inp !="cancel":
-                    print(inp)
+                    #checks that there are remaining missiles
+                    if self.inventory["Heavy"] + self.inventory["Light"] <= 0:
+                        OutOfEveryting()
+                        break
+
                     if inp == "c" or inp == "cancel": break#escape condiion for firing confirmation
 
                     #make sure it's formatted correctly
@@ -550,9 +554,7 @@ class App(moderngl_window.WindowConfig):
                     projectile_type = ProjectileMatch(self, inp_split)
 
                     if projectile_type != None:
-                        (inp, vr, vt, projectile) = Shoot(inp_split, projectile_type
-                                                          
-                                                          )
+                        (inp, vr, vt, projectile) = Shoot(inp_split, projectile_type)
                 if inp == "c": # confims launch
                     #creates the bullet
                     CreateMissile(self, vr, vt, projectile_type, ship, projectile)
