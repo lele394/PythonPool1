@@ -1,4 +1,15 @@
-# import PhysicsEngine.physicalConstants as pc
+
+
+# This is here only for historical purposes
+# this script is not used at all and has been replaced by the rev2
+# as of the creation of the coupled integrator
+
+
+
+
+
+
+#import PhysicsEngine.physicalConstants as pc
 import physicalConstants as pc
 from math import *
 from datetime import datetime

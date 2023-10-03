@@ -351,6 +351,25 @@ def vk_next(vk: float, rk: float, mass: float, l0:float, deltat: float):
 
 
 
+def collisions(objects: list[object], i: int, deltat: float, collision_iterations: list, col):
+    if i < conf_collisionGracePeriod: col = [] # for objects instantiated on top of eachother
+    else: col = DetectCollisions(objects, i, deltat)
+    if col != [] and conf_debugCollisions:
+        print(f'collisions on iteration {i} for objects {col}')
+    if col != []: collision_iterations.append(i)
+
+
+    for pair in col:
+            if  not( pair == "on grace"):update_colliding_objects(pair, objects, deltat)
+    return (objects, i, deltat, collision_iterations)
+
+
+
+
+
+
+
+
 
 
 
@@ -393,10 +412,6 @@ def nbody_coupled_integrator(objects: list[object],
     #for each step
     for i in range(steps):
 
-        
-        
-
-
 
 
         # ~ just to print simulation steps and infos
@@ -419,31 +434,14 @@ def nbody_coupled_integrator(objects: list[object],
 
 
 
-
-
-
-
-
-
-
-
         # ~ Collision stuff hereeee
         # doNotUpdate = []
         col = []
-        if i < conf_collisionGracePeriod: col = [] # for objects instantiated on top of eachother
-        else: col = DetectCollisions(objects, i, deltat)
-        if col != [] and conf_debugCollisions:
-            print(f'collisions on iteration {i} for objects {col}')
-        if col != []: collision_iterations.append(i)
-        
-        
-        for pair in col:
-             if  not( pair == "on grace"):update_colliding_objects(pair, objects, deltat)
+        (objects, i, deltat, collision_iterations) = collisions(objects, i, deltat, collision_iterations, col)
 
 
-
-
-        # * objects tht shall not be updated as they already where in the collision
+        # * objects that shall not be updated as they already where in the collision
+        # * don't need?
         # for pair in col:
         #     for i in pair:
         #         if  pair == "on grace": continue
