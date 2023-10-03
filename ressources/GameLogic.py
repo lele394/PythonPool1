@@ -362,8 +362,9 @@ def GameChoseStratShipPosition():
 
         for i in range(len(default_presets)):
             print(f'.{i}) vr: {default_presets[i][0]}\t vt: {default_presets[i][1]}\t r: {default_presets[i][2]}')
-            inp = input("\n\n > ")
         
+        inp = input("\n\n > ")
+
         vr = default_presets[i][0]
         vt = default_presets[i][1]
         r = default_presets[i][2]
