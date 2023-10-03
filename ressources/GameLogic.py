@@ -338,4 +338,42 @@ def OutOfEveryting():
 
 
 def GameChoseStratShipPosition():
-    return -0.01, 0.05, 35
+
+    clear_screen()
+
+    default_presets = [
+        [-1, 0.05, 35],
+        [0, 0.05, 35]
+    ]
+
+
+    inp = input("""
+ please specify the starting values of your ship
+ This part has no type checker, it can crash if values are not entered the right way
+ please specify them in this order : speed on r, speed on theta, starting radius
+ example : > 0 0.05 35
+ alternatively you can type 'default' to get access to a few preset values          
+ > """)
+    
+
+
+    if inp == "default":
+        print("===== Default available starting values =====\n\n")
+
+        for i in range(len(default_presets)):
+            print(f'.{i}) vr: {default_presets[i][0]}\t vt: {default_presets[i][1]}\t r: {default_presets[i][2]}')
+            inp = input("\n\n > ")
+        
+        vr = default_presets[i][0]
+        vt = default_presets[i][1]
+        r = default_presets[i][2]
+
+        return vr, vt, r
+
+    else:
+        inp_split = inp.split(" ")
+        vr = float(inp_split[0])
+        vt = float(inp_split[1])
+        r = float(inp_split[2])
+
+        return vr, vt, r

@@ -4,8 +4,8 @@ steps_per_frame = 1 #please do not change or the time spent between
 out_of_bound = 40 # distance from the blackhole at which the ship is oncisdered out of bound
 
 starting_inventory = {
-    "Heavy" : 1,
-    "Light" : 100
+    "Heavy" : 5,
+    "Light" : 5
 }
 
 

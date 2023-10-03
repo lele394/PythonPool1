@@ -17,7 +17,7 @@ import glm
 import moderngl
 import moderngl_window
 from moderngl_window import geometry
-from math import cos, sin, pi
+from math import cos, sin
 
 
 class CircleRenderer:
@@ -334,14 +334,14 @@ class App(moderngl_window.WindowConfig):
                         case "Light":
                             #destroy both objects by removing them of the simulation
                             addCoordinatesToList(explosions_locations, a, b)  
-                            self.projs.reomve(a)
-                            self.projs.reomve(b)
+                            self.projs.remove(a)
+                            self.projs.remove(b)
 
                         case "Heavy":
                             #destroy both objects by removing them of the simulation
                             addCoordinatesToList(explosions_locations, a, b)    
-                            self.projs.reomve(a)
-                            self.projs.reomve(b)
+                            self.projs.remove(a)
+                            self.projs.remove(b)
 
                         case "Target":
                             GameWin("LT", self.masterCounterdeltat)  
@@ -393,10 +393,11 @@ class App(moderngl_window.WindowConfig):
         #target id is always 1 since it's instanciated in second
         target = self.projs[1]
         #first check for the ship state. useles to check further if the ship is already out
-        if ship.r > GS.out_of_bound:
+        # gotta make sure that we don't ccidentally trigger an out of bound when the periodic boundary condition is active
+        if ship.r > GS.out_of_bound and not(GS.periodic_boundary_condition_is_active):
             GameLoss("OOB")
         
-        if target.r > GS.out_of_bound:
+        if target.r > GS.out_of_bound and not(GS.periodic_boundary_condition_is_active):
             GameWin("OOB", self.masterCounterdeltat)
 
 
@@ -644,9 +645,9 @@ inp = input(" > ")
 # some stuff to do :
 #       ! ESCAPE VELOCITY COMPARISON IN OOB
 #   //    ! PROJECTILE LUNCH ANGLE
-#       ! PLAYER SET STARTING RADIUS AND VECTOR
+#  //     ! PLAYER SET STARTING RADIUS AND VECTOR
 #     //well there's the thing about setting defult values to projectiles
-#     and default config to start a game
+#     //and default config to start a game
 
 #    //DONE   s OUT OF BOUND IS NOT IMPLEMENTED YET 
 
@@ -655,7 +656,7 @@ inp = input(" > ")
 #     todo also the damn copy paste of everything here as a console thingy
     # prob just gonna print the shit out of object.debug to the console
 
-    # nope no time also recoil and  #// done actually out of bound comebacks maybe
+    # let's do the report first tho nope no time also recoil and  #// done actually out of bound comebacks maybe
 
     # // todo inventory for the number of missiles fired
 
@@ -664,11 +665,13 @@ inp = input(" > ")
 
     # todo testing if all exit conditions work? someone? hello?????
 
-    # polar reticle could be quite funny
+    # ayyyyyyyy polar reticle could be quite funny
 
     # todo check variables that can be put in the config file
 
     # START REPORT???????
+
+    # ! strat.sh and setup
 
 
 
