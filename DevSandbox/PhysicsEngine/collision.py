@@ -62,10 +62,6 @@ def DetectCollisions(objects: list[object], i: int, deltat: float):
         theta1 = p.theta
 
 
-        #get all object it's invulnerable to
-        invulnerable_to = p.WasColliding
-        # print(invulnerable_to)
-
         #check for particles of indices n-1
         for neighbor in range(point+1, len(objects)):
 
@@ -80,16 +76,25 @@ def DetectCollisions(objects: list[object], i: int, deltat: float):
             a = r1**2 +r2**2 - 2 * r1 * r2 * cos(theta2-theta1)
             d = sqrt( a )
 
+            #if colliding
             if d < (rad1 + rad2):
 
                 if objects[neighbor] in p.WasColliding: print(f'Iteration {i} : Collision detectd on {(point, neighbor)} but were colliding before'); collisions.append("on grace"); continue
                 collisions.append( (point, neighbor) )
-            
+
+            #if not colliding remove the spawn tag and eachother from lists
             else :
                 if n in p.WasColliding:
                     p.WasColliding.remove(n)
                 if p in n.WasColliding:
                     n.WasColliding.remove(p)
+
+                #removes spawn flag
+                if p.type == "Ship"and n.type == "Light" and "SpawnedOnShip" in n.WasColliding:
+                    n.WasColliding.remove("SpawnedOnShip")
+                if n.type == "Ship"and p.type == "Light" and "SpawnedOnShip" in p.WasColliding:
+                    p.WasColliding.remove("SpawnedOnShip")
+
 
 
 
@@ -249,8 +254,7 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
     a = objects[pair[0]]
     b = objects[pair[1]]
 
-    a.Debug(deltat)
-    b.Debug(deltat)
+
 
     if a in b.WasColliding or b in a.WasColliding: print("no update as they were already colliding");return
 
@@ -355,8 +359,6 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
     a.UpdateVariables(deltat)
     b.UpdateVariables(deltat)
 
-    a.Debug(deltat)
-    b.Debug(deltat)
     # input()
 
 

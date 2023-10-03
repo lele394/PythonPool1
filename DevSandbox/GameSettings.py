@@ -1,6 +1,67 @@
 steps_per_frame = 1 #please do not change or the time spent between 
 
 
+out_of_bound = 40 # distance from the blackhole at which the ship is oncisdered out of bound
+
+starting_inventory = {
+    "Heavy" : 1,
+    "Light" : 100
+}
+
+
+
+periodic_boundary_condition_is_active = True
+
+
+# ======== COLOR TABLE ==========
+# https://keiwando.com/color-picker/
+color_table = {
+            "red" : [1, 0, 0],
+            "green": [0, 1, 0],
+            "blue": [0, 0, 1],
+            "cyan": [0, 1, 1],
+            "pink": [1, 0, 1],
+            "white":[1, 1, 1],
+            "yellow": [1, 1, 0],
+            "orange": [1, 0.5, 0],
+            "neongreen": [0.31, 0.92, 1],
+            "black": [0, 0, 0],
+
+            "Ship": [0,1,0],
+            "Heavy": [0.11, 0.62, 0.99],
+            "Light": [1.00, 0.67, 0.22],
+            "Target": [1.00, 0.17, 0.00]
+        }
+
+
+#========= PROJECTILES DEFAULT VALUES =======
+#default raidus are set to 0.5 for display reasons. Raiduses are not passed
+#to the shader, thus not rendered to the right size. currently hardcoded to 0.5
+projectiles_default = {
+    "Heavy" : {
+        "mass": 750,
+        "radius": 0.5,
+        "speed": 0.4
+    },
+
+    "Light" : {
+        "mass": 5,
+        "radius": 0.5,
+        "speed": 0.5
+    }
+}
+
+
+#========= AESTHETICSSSSS =========
+#still experimental but these values give a somehat good result
+background_color = [0.05, 0.13, 0.18]
+# background_color = [33/255, 33/255, 33/255]
+fade_off = 0.005
+color_distance_treshold = 0.2
+# ^ will reimplement the background color, will have to do for now
+
+
+
 """
 Visual aid for win/loss conditions
 

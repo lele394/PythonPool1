@@ -5,7 +5,7 @@ conf_statusDebug = False
 
 #collision grace period
 conf_collisionGracePeriod = 0 #number of steps where collisions are not checked
-conf_debugCollisions = True #prints some info when collisions are detected
+conf_debugCollisions = False #prints some info when collisions are detected
 
 
 #dynamic deltat

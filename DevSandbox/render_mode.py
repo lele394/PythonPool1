@@ -6,7 +6,7 @@ import PhysicsEngine as e
 
 
 import GameSettings as GS
-from GameLogic import GameWin, GameLoss, ElasticCollision, GameBanner
+from GameLogic import *
 from utilities import clear_screen
 
 
@@ -159,7 +159,7 @@ class App(moderngl_window.WindowConfig):
     aspect_ratio = 1.0
     resource_dir = 'shaders'
 
-    def __init__(self, **kwargs):
+    def __init__(self,**kwargs):
         """
         initialisation of the window, and all the rest
         """
@@ -168,9 +168,9 @@ class App(moderngl_window.WindowConfig):
         super().__init__(**kwargs)
 
         # * aesthetics~~ colors and stuff, customize to make it look CoOoOoLlLl
-        self.bg_color = [33/255, 33/255, 33/255]
-        self.fade_off = 0.01
-        self.color_distance_treshold = 0.25
+        self.bg_color = GS.background_color
+        self.fade_off = GS.fade_off
+        self.color_distance_treshold = GS.color_distance_treshold
         """
         carefull, background color is implemented in fade off, making it a shitty 
         idea as it does not have its own display shader. the distance between colors is 
@@ -212,6 +212,7 @@ class App(moderngl_window.WindowConfig):
         # * setting up shaders uniforms, renderers and display geometry
         # ~ blit 
         self.blit_program["bg_color"] = self.bg_color
+        self.blit_program["fade_off"] = self.fade_off
         self.blit_program["color_distance_treshold"] = self.color_distance_treshold
 
         # ~ darkener
@@ -237,6 +238,8 @@ class App(moderngl_window.WindowConfig):
         # todo change to include vars from GameSettings.py
         self.steps_per_frame = GS.steps_per_frame
 
+        self.inventory = GS.starting_inventory
+
         
         # ^ SIMULATION VARIABLES HERE
         #black hole object, please don't touch the mass, projectiles speeds are balanced on it
@@ -248,32 +251,18 @@ class App(moderngl_window.WindowConfig):
         self.counterdeltat = 0 #thing that counts the deltat spent since the last turn, needed as deltat changes
         self.masterCounterdeltat = 0
 
+
+        (ship_vr, ship_vtheta, ship_r) = GameChoseStratShipPosition()
         #your initial projectiles, here just the ship and the target
         self.projs = [
-            e.object("Ship", 30, e.pi, 0, -0.05, 1, 0.5), #red
-            e.object("Target", 30, 0, 0, 0.05,  1, 0.5), #blue
+            e.object("Ship", ship_r, e.pi, ship_vr, ship_vtheta, 1e5, 0.5), #red
+            e.object("Target", 30, 0, 0, 0.05,  1e5, 0.5), #blue
         ]
 
         self.deltat = e.deltaless_deltat(self.projs) #initialize the deltat for the first run
 
         # ^ just some cool colors that can be used in the simulation
-        self.type_colors = {
-            "red" : [1, 0, 0],
-            "green": [0, 1, 0],
-            "blue": [0, 0, 1],
-            "cyan": [0, 1, 1],
-            "pink": [1, 0, 1],
-            "white":[1, 1, 1],
-            "yellow": [1, 1, 0],
-            "orange": [1, 0.5, 0],
-            "neongreen": [0.31, 0.92, 1],
-            "black": [0, 0, 0],
-
-            "Ship": [0,1,0],
-            "Heavy": [1, 0, 0],
-            "Light": [0, 0, 1],
-            "Target": [0.92, 0.04, 0.04]
-        }
+        self.type_colors = GS.color_table
 
 
 
@@ -319,19 +308,20 @@ class App(moderngl_window.WindowConfig):
 
         #check for gamerules collisions
         for pair in col_pairs:
+            print(pair)
             a = self.projs[pair[0]]
             b = self.projs[pair[1]]
 
-
+            # ! GAME LOGIC ====================================================================
             # * please refer to GameSettings.py for the truthtable
             match a.type:
                 case "Heavy":
                     match b.type:
                         case "Light":
                             #destroy both objects by removing them of the simulation
-                            self.projs.reomve(a)
-                            self.projs.reomve(b)
                             addCoordinatesToList(explosions_locations, a, b)
+                            self.projs.remove(a)
+                            self.projs.remove(b)
                         
                         case "Heavy" | "Ship" | "Target":
                             ElasticCollision()
@@ -343,21 +333,21 @@ class App(moderngl_window.WindowConfig):
                     match b.type:
                         case "Light":
                             #destroy both objects by removing them of the simulation
+                            addCoordinatesToList(explosions_locations, a, b)  
                             self.projs.reomve(a)
                             self.projs.reomve(b)
-                            addCoordinatesToList(explosions_locations, a, b)  
 
                         case "Heavy":
                             #destroy both objects by removing them of the simulation
+                            addCoordinatesToList(explosions_locations, a, b)    
                             self.projs.reomve(a)
                             self.projs.reomve(b)
-                            addCoordinatesToList(explosions_locations, a, b)    
 
                         case "Target":
                             GameWin("LT", self.masterCounterdeltat)  
 
                         case "Ship":
-                            GameLoss("LS")               
+                            if "SpawnedOnShip" in b.WasColliding:GameLoss("LS") 
 
                         case _: #undetermined case
                             print(f'could not determine the type of collision for {(a.type, b.type)}, are you using debug colors as types?')
@@ -379,7 +369,8 @@ class App(moderngl_window.WindowConfig):
                 case "Ship":
                     match b.type:
                         case "Light":
-                            GameLoss("LS")
+                            if b in a.WasColliding:
+                                GameLoss("LS")
 
                         case "Target":
                             GameWin("TS", self.masterCounterdeltat)
@@ -393,8 +384,43 @@ class App(moderngl_window.WindowConfig):
 
                 case _: #undetermined case
                     print(f'could not determine the type of collision for {(a.type, b.type)}, are you using debug colors as types?')
+            # ! ================================================================================
+            
+
+        # * OUT OF BOUND CHECKS ============================================================
+        #ship id is always 0 since it's instanciated first
+        ship = self.projs[0]
+        #target id is always 1 since it's instanciated in second
+        target = self.projs[1]
+        #first check for the ship state. useles to check further if the ship is already out
+        if ship.r > GS.out_of_bound:
+            GameLoss("OOB")
+        
+        if target.r > GS.out_of_bound:
+            GameWin("OOB", self.masterCounterdeltat)
 
 
+        #check for all objects that may leave the lay area
+        for obj in self.projs:
+            if obj.r > GS.out_of_bound:
+                #if we're using the periodic boundary condition
+                if GS.periodic_boundary_condition_is_active:
+
+                    #spin it around
+                    # we can just multiply by deltat since we're far from the blackhole; 1st order corrections are not applicable
+                    obj.theta = obj.theta + e.pi #spin theta by pi
+                    obj.theta_list.append(obj.theta)
+                    obj.vr = -obj.vr# radial speed must be inversed
+                    obj.v_list.append(obj.vr) # add the newly inversed speed
+
+                    obj.r = GS.out_of_bound # gotta bring back the ball in the play area
+                    obj.r_list.append(obj.r )
+
+                #and remove then if they're too far
+                else: self.projs.remove(obj)
+
+
+        #* ================================================================================
 
 
 
@@ -402,39 +428,92 @@ class App(moderngl_window.WindowConfig):
 
         # * turn loop with input management
         if self.counterdeltat >= self.deltat_per_turn: # if enough time has passed since the last turn
-            print(f'time elapsed since last turn {self.counterdeltat}, deltat {self.deltat}')
+            clear_screen()
+            print(f'time elapsed since last turn {self.counterdeltat}, deltat {self.deltat}, game time {self.masterCounterdeltat}')
             self.counterdeltat = 0 # resets the counter for the next turn
-            inp = input("new round input : (l)aunch (w)ait >")
+            inp = GameNewTurn()#display new turn screen
 
             if inp =="q":
                 quit()
 
+
+
+
+
+
             if inp == "l":
-                inp = input("   vr vtheta type\n > ")
+                
                 to_add = [] # list to keep the coordinates of the new object
                 while inp != "c" or inp !="cancel":
-                    if inp == "c": break
-                    # splicing?
-                    inp_split = [i for i in inp.split(" ")]
+                    print(inp)
+                    if inp == "c" or inp == "cancel": break#escape condiion for firing confirmation
+
+                    #make sure it's formatted correctly
+                    formatted_correctly = False
+                    while not formatted_correctly:
+                        inp = GameFiring(self.inventory)
+                        inp_split = [i for i in inp.split(" ")]
+                        try:
+                            float(inp_split[0]) # makes sure the first item can be interpreted as a float
+                            #makes sure the 2nd item is a valid type
+                            if any(char in inp_split[1] for char in ('h', 'H', 'heavy', 'Heavy', 'l', 'L', 'light', 'Light')):
+                                formatted_correctly = True
+                        except:
+                            print("\033[92mcommand\033[91m@firing-console\033[95m ! formatting does not seem correct, did you mistype something?\033[97m  ")
+
 
                     ship_id = 0 #should always be 0
                     ship = self.projs[ship_id]
 
-                    to_add = [float(inp_split[0]), float(inp_split[1])]
+                    projectile_type = ""
+                    #match the right projectile type to the entry
+                    match str(inp_split[1]):
+                        case "h" | "H" | "Heavy" | "heavy":
+                            if self.inventory["Heavy"] > 0:
+                                projectile_type = "Heavy"
+                                self.inventory["Heavy"] -= 1
+                            else:
+                                OutOfAmmo("Heavy")
+                                projectile_type = None
 
-                    inp = input(" (c)onfirm or (cancel)")
+                        case "l" | "L" | "Light" | "light":
+                            if self.inventory["Light"] > 0:
+                                projectile_type = "Light"
+                                self.inventory["Light"] -= 1
+                            else:
+                                OutOfAmmo("Light")
+                                projectile_type = None
 
-            if inp == "c":
-                #creates the bullet
-                bullet = e.object(inp_split[2], ship.r, ship.theta, to_add[0], to_add[1], 10**2, 0.02)
+                        case _:
+                            print("error parsing the projectile type, that shouldn't be possible, escaping")
+                            input("quit... ")
+                            quit()
 
-                #adds the ship as an initial object it's colliding with
-                bullet.WasColliding.append(ship)
+                    if projectile_type != None:
+                        firing_angle = float(inp_split[0])
+                        projectile = GS.projectiles_default[projectile_type]
 
-                #adds the bullet into the simulation
-                self.projs.append(
-                       bullet
-                    )
+                        #calculates components of v
+                        vr = projectile["speed"] * -sin(firing_angle)
+                        vt = projectile["speed"] * cos(firing_angle)
+
+                        print(f'\033[92mcommand\033[91m@firing-console\033[95m ! Will launch a projectile of speed : vtheta {round(vt, 4)}\t vr {round(vr, 4)}')
+
+                        inp = input("\033[92mcommand\033[91m@firing-console\033[95m ! (c)onfirm or (cancel)\n\033[92mcommand\033[91m@firing-console\033[97m> ")
+
+                if inp == "c":
+                    #creates the bullet
+                    print(f'ship vars {vr, vt}')
+                    bullet = e.object(projectile_type, ship.r, ship.theta, ship.vr + vr, ship.vtheta+vt, projectile["mass"], projectile["radius"])
+
+                    #adds the ship as an initial object it's colliding with
+                    bullet.WasColliding.append(ship)
+                    bullet.WasColliding.append("SpawnedOnShip")#check for collisions on summon
+
+                    #adds the bullet into the simulation
+                    self.projs.append(
+                        bullet
+                        )
 
 
 
@@ -460,6 +539,7 @@ class App(moderngl_window.WindowConfig):
             r = obj.r
             theta = obj.theta
 
+            #10 zoom factor of the gamespace
             x = r*10 * cos(theta) +self.window_size[0]/2
             y = r*10 * sin(theta) +self.window_size[1]/2
 
@@ -509,7 +589,7 @@ class App(moderngl_window.WindowConfig):
 
 
     def update_positions_and_colors(self, x: list[float], y: list[float], colors: list[float], number_of_circles: int):
-        """cretes positions list tht fit in the sahder buffer"""
+        """creates positions list tht fit in the sahder buffer"""
         positions = [0, 0] * len(x)
         for i in range(len(x)):
             positions[i * 2] = x[i]
@@ -520,9 +600,35 @@ class App(moderngl_window.WindowConfig):
 
 
 
+while True:
+    #display game banner
+    GameBanner()
+
+    #gets input from the menu
+    inp = GameMenu()
+
+    if any(char in inp for char in ('p', 'P', '1')):
+        skip = False
+        #plays the game introduction or not if you want to skip it
+        if any(char in input("Do you wish to (s)kip the intro?(enter twice to see it)\n > ") for char in ('s', 'S')): skip = True
+        GameIntroduction(skip)
+        
+
+        #start game here
+        moderngl_window.run_window_config(App)
+        pass
+
+    elif any(char in inp for char in ('h', 'H', '2')):
+        #print help
+        GameHowToPlay()
+
+    elif any(char in inp for char in ('c', 'C', '3')):
+        GameCredits()
+
+    elif any(char in inp for char in ('q', 'Q', '4')):
+        quit()
 
 
-GameBanner()
 
 
 # do something about credits or something
@@ -536,26 +642,29 @@ inp = input(" > ")
 
 
 # some stuff to do :
-#     well there's the thing about setting defult values to projectiles
+#       ! ESCAPE VELOCITY COMPARISON IN OOB
+#   //    ! PROJECTILE LUNCH ANGLE
+#       ! PLAYER SET STARTING RADIUS AND VECTOR
+#     //well there's the thing about setting defult values to projectiles
 #     and default config to start a game
 
-#     todo OUT OF BOUND IS NOT IMPLEMENTED YET 
+#    //DONE   s OUT OF BOUND IS NOT IMPLEMENTED YET 
 
-#     story telling and all
+#     #~pretty well into that story telling and all, needa do the win texts
 
 #     todo also the damn copy paste of everything here as a console thingy
     # prob just gonna print the shit out of object.debug to the console
 
-    # also recoil and out of bound comebacks maybe
+    # nope no time also recoil and  #// done actually out of bound comebacks maybe
 
-    # todo inventory for the number of missiles fired
+    # // todo inventory for the number of missiles fired
 
     # inelastic collisions and debris could be fun, but need to pass a radius
     # to the shader sooooooo...................
 
     # todo testing if all exit conditions work? someone? hello?????
 
-    # background and polar reticle could be quite funny
+    # polar reticle could be quite funny
 
     # todo check variables that can be put in the config file
 
@@ -565,5 +674,5 @@ inp = input(" > ")
 
 
 
-moderngl_window.run_window_config(App)
+# moderngl_window.run_window_config(App)
 

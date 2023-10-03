@@ -407,6 +407,7 @@ def nbody_coupled_integrator(objects: list[object],
 
 
 
+
         #resets depopulation indices
         objects_to_depop = []
 
