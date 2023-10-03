@@ -294,6 +294,14 @@ class App(moderngl_window.WindowConfig):
         GameruleCollisions(self, col_pairs, explosions_locations)        
 
         # * OUT OF BOUND CHECKS ============================================================
+
+        #check if the ship or the target are in the out lists, which would mean they fell in the black hole
+        for obj in outs:
+            if obj.type == "Ship":
+                GameLoss("FIBH")
+            elif obj.type == "Target":
+                GameWin("FIBH")
+
         #ship id is always 0 since it's instanciated first
         ship = self.projs[0]
         #target id is always 1 since it's instanciated in second

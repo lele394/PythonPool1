@@ -187,19 +187,30 @@ def GameWin(type: str, master_deltat):
 
     OOB : target went out of bound
 
+    FIBH: target fell in black hole
+
     """
     clear_screen()
     match type:
         case "LT":
-            print("Sir, our calculations were correct! a light round destroyed the inhibitor")
+            print("\n\n         Sir, our calculations were correct! a light round destroyed the inhibitor!\n")
 
         case 'TS':
-            print("""
-You madlad, you somewhow sent us directly into it! We've suffered minimal
-damage and the gun crew was able to gun down the inhibitor in a heartbeat!""")
+            print("""\n\n
+        You madlad, you somewhow sent us directly into it! We've suffered minimal
+        damage and the gun crew was able to gun down the inhibitor in a heartbeat!\n""")
+            
+        case 'OOB':
+            print("""\n\n
+        Sir, the inhibitor is losing power, we threw it off course. Our Engine works again, we're safe!
+\n""")
+        case 'FIBH':
+            print("""\n\n
+        Sir, the inhibitor fell into the black hole! We're free!
+\n""")
 
-    print(f'You saved your crew in {round(master_deltat, 3)} minutes!')
-    input("press enter to leave > ")
+    print(f'        You saved your crew in {round(master_deltat, 3)} minutes!')
+    input(" press enter to leave > ")
     quit()
 
 
@@ -222,7 +233,28 @@ def GameLoss(type: str):
     FIBH: ship fell in the blackhole
     """
     clear_screen()
-    print("game lost")
+    match type:
+        case "LS":
+            print("""\n\n
+        Sir, it's coming ba-- bzzz...........
+        A light round came back and destroyed your ship.\n
+""")
+
+        case "OOB":
+            print("""\n\n
+        Sir, we've deviated too much... We're bound for outer space
+        Your ship ventured too far in outer space. You never found 
+        a way to leave this system\n
+""")
+
+        case "FIBH":
+            print("""\n\n
+        Sir, we're bound fro the black hole, we're done for...
+        You deviated too much from your orbit. Your ship falls 
+        in the black hole and you're lost to the void.\n
+""")
+            
+    print("  game lost")
     input(" > ")
     quit()
 
