@@ -47,7 +47,7 @@ def GameMenu():
 
 def GameHowToPlay():
     clear_screen()
-    print("this section is currently empty")
+    print("tIt's pretty easy, launch a game and see how it goes\ncheck the asociated paper if you need help\n")
     input("Press enter to continue\n > ") 
 
 
