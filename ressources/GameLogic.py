@@ -3,6 +3,7 @@ import GameSettings as GS
 import PhysicsEngine as e
 import numpy as np
 from math import cos, sin
+from PhysicsEngine import pi
 
 
 
@@ -59,14 +60,14 @@ def ProjectileMatch(self, inp_split):
 
 
 def Shoot(inp_split, projectile_type):
-    firing_angle = np.rad2deg(float(inp_split[0]))
+    firing_angle = float(inp_split[0]) * pi / 180
     projectile = GS.projectiles_default[projectile_type]
 
     #calculates components of v
-    vr = projectile["speed"] * -sin(firing_angle)
-    vt = projectile["speed"] * cos(firing_angle)
+    vr = projectile["speed"] * -sin(firing_angle) # minus on the sinus to make it more intuitive, counter clockwise shooting
+    vt = projectile["speed"] * cos(firing_angle)  # we're firing "towards" the black hole
 
-    print(f'\033[92mcommand\033[91m@firing-console\033[95m ! Will launch a projectile of speed : vtheta {round(vt, 4)}\t vr {round(vr, 4)}')
+    print(f'\033[92mcommand\033[91m@firing-console\033[95m ! Will launch a projectile of speed : angle {round(firing_angle, 4)}rad\t vtheta {round(vt, 4)}\t vr {round(vr, 4)}')
 
     inp = input("\033[92mcommand\033[91m@firing-console\033[95m ! (c)onfirm or (cancel)\n\033[92mcommand\033[91m@firing-console\033[97m> ")
 
@@ -79,7 +80,8 @@ def Shoot(inp_split, projectile_type):
 def CreateMissile(self, vr, vt, projectile_type, ship, projectile, deltat):
     print(f'ship vars {vr, vt}')
     bullet = e.object(projectile_type, ship.r, ship.theta, ship.vr + vr, ship.vtheta+vt, projectile["mass"], projectile["radius"])
-    # bullet = e.object(projectile_type, ship.r, ship.theta, -1, 0, projectile["mass"], projectile["radius"])
+
+    # bullet = e.object(projectile_type, ship.r, ship.theta, ship.vr, ship.vtheta, projectile["mass"], projectile["radius"])
 
     #adds the ship as an initial object it's colliding with
     bullet.WasColliding.append(ship)

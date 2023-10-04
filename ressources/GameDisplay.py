@@ -310,9 +310,9 @@ def GameFiring(inv):
 ║     &&&&&&&&&&     ║   Please input our firing settings in the console
 ║     &&&&&&&&&&     ║   As a reminder we only have {inv["Heavy"]} \033[94m(H)eavy\033[97m and {inv["Light"]}\033[33m(L)ight\033[97m missiles.
 ║       &&&&&&       ║   
-║        &&&&        ║   To input your coordinates, please speciy an angle and a type
+║        &&&&        ║   To input your coordinates, please speciy an angle (degrees, counter clockwise) and a type
 ║        &&&&        ║   Here`s an example :
-║    &&&&&&&&&&&&    ║   \033[92mcommand\033[91m@firing-console\033[97m> 1.2 Heavy
+║    &&&&&&&&&&&&    ║   \033[92mcommand\033[91m@firing-console\033[97m> 70 Heavy
 ║  &&&&&&&&&&&&&&&&  ║   
 ║                    ║   Bear in mind the angle is relative to the velocity of our ship
 ╚════════════════════╝     helping tool : www.desmos.com/calculator/6ghiuav1rs
