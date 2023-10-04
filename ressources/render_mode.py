@@ -241,6 +241,13 @@ class App(moderngl_window.WindowConfig):
         self.projs = [
             e.object("Ship", ship_r, e.pi, ship_vr, ship_vtheta, 1e5, 0.5), #red
             e.object("Target", 30, 0, 0, 0.05,  1e5, 0.5), #blue
+
+            # ! debug
+            # e.object("Ship", 30, e.pi, 0, -0.05, 1e5, 0.5), #red
+            # e.object("Target", 30, 0, 0, 0.05,  2.5e4, 0.5), #blue
+
+            
+            
         ]
 
         self.deltat = e.deltaless_deltat(self.projs) #initialize the deltat for the first run
@@ -276,7 +283,8 @@ class App(moderngl_window.WindowConfig):
         #! simulation shennanigans =======================================
 
         # * deltat shall not be calculated if its the 1st iteratio
-        if self.iteration != 0: self.deltat = e.ComputeDeltatT(self.projs, self.deltat);
+        self.deltat = e.ComputeDeltatT(self.projs, self.deltat);
+        # if self.iteration != 0: self.deltat = e.ComputeDeltatT(self.projs, self.deltat);
 
         #increment the counter, however please note that the elapsed time between turns will not be exact each time
         # some errors are present that makes it so the deltat keeps on becoming smaller and smaller.
@@ -286,7 +294,7 @@ class App(moderngl_window.WindowConfig):
 
 
         # ! that's the run simulation function, and one hell of a thing to implement
-        (outs, self.projs, self.deltat, dt_list, col_list, col_pairs) = e.nbody_coupled_integrator(self.projs, self.bh, self.steps_per_frame, self.deltat)
+        (outs, self.projs, self.deltat, dt_list, col_list, col_pairs) = e.game_physics_loop(self.projs, self.bh, self.steps_per_frame, self.deltat)
 
         explosions_locations = [] # for potential future rendering of collisions
 
@@ -387,7 +395,7 @@ class App(moderngl_window.WindowConfig):
                         (inp, vr, vt, projectile) = Shoot(inp_split, projectile_type)
                 if inp == "c": # confims launch
                     #creates the bullet
-                    CreateMissile(self, vr, vt, projectile_type, ship, projectile)
+                    CreateMissile(self, vr, vt, projectile_type, ship, projectile, self.deltat)
 
 
 
@@ -471,6 +479,16 @@ class App(moderngl_window.WindowConfig):
 
         # Move the circles
         self.circle_renderer.update(positions, colors)
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -344,8 +344,8 @@ def update_colliding_objects(pair: (int, int), objects: list[object],  deltat: f
 
 
 
-    print( nvra, nvta )
-    print( nvrb, nvtb )
+    # print( nvra, nvta )
+    # print( nvrb, nvtb )
 
 
     #updates l0s

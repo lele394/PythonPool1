@@ -1,7 +1,7 @@
 from GameDisplay import *
 import GameSettings as GS
 import PhysicsEngine as e
-
+import numpy as np
 from math import cos, sin
 
 
@@ -59,7 +59,7 @@ def ProjectileMatch(self, inp_split):
 
 
 def Shoot(inp_split, projectile_type):
-    firing_angle = float(inp_split[0])
+    firing_angle = np.rad2deg(float(inp_split[0]))
     projectile = GS.projectiles_default[projectile_type]
 
     #calculates components of v
@@ -76,14 +76,21 @@ def Shoot(inp_split, projectile_type):
 
 
 
-def CreateMissile(self, vr, vt, projectile_type, ship, projectile):
+def CreateMissile(self, vr, vt, projectile_type, ship, projectile, deltat):
     print(f'ship vars {vr, vt}')
     bullet = e.object(projectile_type, ship.r, ship.theta, ship.vr + vr, ship.vtheta+vt, projectile["mass"], projectile["radius"])
+    # bullet = e.object(projectile_type, ship.r, ship.theta, -1, 0, projectile["mass"], projectile["radius"])
 
     #adds the ship as an initial object it's colliding with
     bullet.WasColliding.append(ship)
     bullet.WasColliding.append("SpawnedOnShip")#check for collisions on summon
 
+
+    #! SHENNNIGANS, VR SEEMS WRONG IN SIM
+
+    e.nbody_coupled_integrator(bullet, e.object("Blackhole", 0,0,0,0,10**12), deltat)
+
+    bullet.UpdateVariables(deltat)
     #adds the bullet into the simulation
     self.projs.append(
         bullet

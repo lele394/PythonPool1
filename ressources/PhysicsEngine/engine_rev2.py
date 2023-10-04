@@ -1,7 +1,6 @@
 # import PhysicsEngine.physicalConstants as pc
 from .physicalConstants import *
 from math import *
-from datetime import datetime
 from .collision import *
 
 
@@ -163,6 +162,7 @@ class object:
     def Debug(self, deltat):
         print( "\n==============================")
         print(f'debugging object {self}')
+        print(f'object type {self.type}')
         print(f'm {self.m}\t radius {self.radius}\t l0 {self.l0}')
         print(f'r {self.r}\t theta {self.theta}')
         print(f'vr {self.vr}\t vtheta {self.vtheta}')
@@ -246,6 +246,13 @@ def deltaless_deltat(objects, override=""):
         dt = 2 * pi * object.r_list[-1] / (conf_computeDeltaDeltatFactor * v)
         dt_list.append(dt)
 
+        
+    # * part where objects just jump no more than twice their radius, for collision purposes
+    for object in objects:
+        v = sqrt(object.v_list[-1]**2+object.r_list[-1]**2*object.vtheta**2)
+        dt = 2 * object.radius / v
+        dt_list.append(dt)
+
     return min(dt_list)
 
 
@@ -287,7 +294,7 @@ def theta_next(theta: float, l0: float, rk: float, deltat: float) -> float:
         time delta between both steps
 
 
-    UPDATE RK TO THE ALGORITHM IN PDF
+    #//UPDATE RK TO THE ALGORITHM IN PDF
     """
 
     return theta + l0/(rk**2)* deltat
@@ -361,149 +368,54 @@ def collisions(objects: list[object], i: int, deltat: float, collision_iteration
 
     for pair in col:
             if  not( pair == "on grace"):update_colliding_objects(pair, objects, deltat)
-    return (objects, i, deltat, collision_iterations)
+    return (objects, i, deltat, collision_iterations, col)
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def nbody_coupled_integrator(objects: list[object], 
-                       blackhole: object, 
-                       steps: int, 
-                       initialDeltat: float
-                       ):
+def nbody_coupled_integrator(obj, blackhole, deltat):
     """
-    does everything
+    input :
+        obj : object
+            object that simulation will be run on
+        
+        blackhole : object
+            blackhole of the simulation, effectively, only the mss is required.
+            a simple object with only a .m property is required.
+        
+        deltat : float
+            deltat of the simulation step
+
+    infos :
+        function updates the object lists with the next step of the simulation
+        using the provided methods.
+
+
     """
-    # print(f'\n\n STARTING SIMULATION \n\n')
-    
+    # * stuff for r 
+    obj.r_list.append( rk_next(obj.r_list[-1], obj.v_list[-1], deltat) )
+    obj.v_list.append( vk_next(obj.v_list[-1], obj.r_list[-1], blackhole.m, obj.l0, deltat) )
 
-    # objects that are out of the simulation
-    finished_objects = []
+    # * stuff for theta 
+    obj.theta_list.append(theta_next(obj.theta_list[-1], obj.l0, obj.r_list[-1], deltat) % (2*pi))
 
-    deltat_list = []
-    collision_iterations = []
-
-    #creates deltat variable
-    deltat = initialDeltat
-
-
-
-
-
-
-    rem_time = datetime.now()
-    #for each step
-    for i in range(steps):
-
-
-
-        # ~ just to print simulation steps and infos
-        if i %conf_statusPrintModulo == 0 and conf_statusDebug == True:
-            print(f' {int(i/steps * 100)} % \t current deltat : {deltat:.5f} \t step time : {(datetime.now() - rem_time)} \t estimated remaining time : {(datetime.now() - rem_time) * (steps-i)}\t active objects {len(objects)}')
-        rem_time = datetime.now()
+    # # ! debug
+    # if obj.type == "Light" or obj.type == 'Ship':
+    #     obj.Debug(deltat)
+    #     input()
 
 
 
 
 
-        #resets depopulation indices
-        objects_to_depop = []
-
-
-
-        if len(objects) == 0:
-            break
-            
-
-
-
-        # ~ Collision stuff hereeee
-        # doNotUpdate = []
-        col = []
-        (objects, i, deltat, collision_iterations) = collisions(objects, i, deltat, collision_iterations, col)
-
-
-        # * objects that shall not be updated as they already where in the collision
-        # * don't need?
-        # for pair in col:
-        #     for i in pair:
-        #         if  pair == "on grace": continue
-        #         if objects[i] not in doNotUpdate:
-        #             doNotUpdate.append(objects[i])
 
 
 
 
 
-        #compute a deltat
-        if i!=0 : deltat = ComputeDeltatT(objects, deltat); deltat_list.append(deltat)#do not run on first iteration, need to use deltat passed
-        #for each object do 1 step
-        for obj in objects:
 
-            #debug objects
-            # print(obj.r_list[-1] , "\t", obj.v_list[-1],"\t", obj.theta_list[-1], "\t", obj.speed_norm(deltat))
-
-
-            #! uncomment
-            # if obj in doNotUpdate: continue
-
-            # * stuff for r 
-            obj.r_list.append( rk_next(obj.r_list[-1], obj.v_list[-1], deltat) )
-            obj.v_list.append( vk_next(obj.v_list[-1], obj.r_list[-1], blackhole.m, obj.l0, deltat) )
-
-            # * stuff for theta 
-            obj.theta_list.append(theta_next(obj.theta_list[-1], obj.l0, obj.r_list[-1], deltat) % (2*pi))
-
-
-
-            # print(obj.r_list[-1])
-            # ~ escape conditions
-            if obj.r_list[-1] < conf_outOfBoundMin or obj.r_list[-1] > conf_outOfBoundMax:
-
-
-                if obj.r_list[-1] < conf_outOfBoundMin: print(f'object fell in blackhole, remaining objects before pop : {len(objects)}, iteration number {i}'); obj.IsOut = True
-                if obj.r_list[-1] > conf_outOfBoundMax: print(f'object escape, remaining objects before pop : {len(objects)}, iteration number {i}'); obj.IsOut = True
-
-                finished_objects.append(obj)
-
-                objects_to_depop.append(obj)
-
-
-        # * dels all specified objects to depop
-        for obj_to_remove in objects_to_depop:
-            objects.remove(obj_to_remove)
-            print(f'depop {obj_to_remove}')
-
-
-    # ~ makes sure everything has up to date variables
-    # ^ this is here because when commenting the collision stuff to deactivate it,
-    # ^ the renderer in opengl stops to work.
-    for obj in objects:
-        obj.UpdateVariables(deltat)
-    for obj in finished_objects:
-        obj.UpdateVariables(deltat)
-
-    # * writes all remaining objects to the output list
-    return (finished_objects, objects, deltat, deltat_list, collision_iterations, col)
-    #                                   ^ deltat is returned cuz needed to initiate nextstep
-    #                                                                              ^ col returned here to get the last collisions pair
 
 
 

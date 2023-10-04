@@ -39,13 +39,13 @@ color_table = {
 #to the shader, thus not rendered to the right size. currently hardcoded to 0.5
 projectiles_default = {
     "Heavy" : {
-        "mass": 750,
+        "mass": 2.5e4,
         "radius": 0.5,
         "speed": 0.4
     },
 
     "Light" : {
-        "mass": 5,
+        "mass": 500,
         "radius": 0.5,
         "speed": 0.5
     }
