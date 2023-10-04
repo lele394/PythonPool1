@@ -10,7 +10,8 @@ from utilities import clear_screen
 def GameBanner():
     clear_screen()
     print(
-        """\033[96m
+        """\033[96m\n ver:alpha2
+
 ╔═══════════════════════════════════════════════════╗
 ║  _   __    _         _   _ ___     __ ___      _  ║
 ║ |_  (_    |_   |\ | / \ |_) | |_| (_   |  /\  |_) ║
