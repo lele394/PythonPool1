@@ -502,7 +502,8 @@ while True:
     if any(char in inp for char in ('p', 'P', '1')):
         skip = False
         #plays the game introduction or not if you want to skip it
-        if any(char in input("Do you wish to (s)kip the intro?(enter twice to see it)\n > ") for char in ('s', 'S')): skip = True
+        inp = input("Do you wish to (s)kip the intro?(enter twice to see it)\n > ")
+        if any(char in inp for char in ('s', 'S')): skip = True
         GameIntroduction(skip)
         
 
