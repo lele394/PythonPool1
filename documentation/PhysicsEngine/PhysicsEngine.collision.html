@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module PhysicsEngine.collision</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="PhysicsEngine.html"><font color="#ffffff">PhysicsEngine</font></a>.collision</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/leo/Desktop/Northstar%20-%20stranded%20crew/ressources/PhysicsEngine/collision.py">/home/leo/Desktop/Northstar - stranded crew/ressources/PhysicsEngine/collision.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-DetectCollisions"><strong>DetectCollisions</strong></a>(objects: list[object], i: int, deltat: float)</dt><dd><tt>input&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;object&nbsp;:&nbsp;list[object]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list&nbsp;of&nbsp;all&nbsp;objects<br>
+&nbsp;&nbsp;&nbsp;&nbsp;i&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;number&nbsp;of&nbsp;the&nbsp;iteration<br>
+&nbsp;<br>
+return:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;list[(int,&nbsp;int)]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;pairs&nbsp;of&nbsp;int&nbsp;corresponding&nbsp;to&nbsp;both&nbsp;objects&nbsp;in&nbsp;a&nbsp;collision</tt></dd></dl>
+ <dl><dt><a name="-car_vel_to_pol"><strong>car_vel_to_pol</strong></a>(vx, vy, theta)</dt><dd><tt>input&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vx&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;speed&nbsp;on&nbsp;x<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vy&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;speed&nbsp;on&nbsp;y<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;theta&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;angle&nbsp;<br>
+&nbsp;<br>
+return&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vr,&nbsp;vtheta:&nbsp;floats<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;coordinates&nbsp;of&nbsp;the&nbsp;vector&nbsp;in&nbsp;polar&nbsp;coordinates</tt></dd></dl>
+ <dl><dt><a name="-cos"><strong>cos</strong></a>(x, /)</dt><dd><tt>Return&nbsp;the&nbsp;cosine&nbsp;of&nbsp;x&nbsp;(measured&nbsp;in&nbsp;radians).</tt></dd></dl>
+ <dl><dt><a name="-pol_vel_to_car"><strong>pol_vel_to_car</strong></a>(vr, vtheta, theta)</dt><dd><tt>input&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vr&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;speed&nbsp;on&nbsp;r<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vtheta&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;speed&nbsp;on&nbsp;theta<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;theta&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;angle&nbsp;<br>
+&nbsp;<br>
+return&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vx,&nbsp;vy:&nbsp;floats<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;coordinates&nbsp;of&nbsp;the&nbsp;vector&nbsp;in&nbsp;cartesian&nbsp;coordinates</tt></dd></dl>
+ <dl><dt><a name="-sin"><strong>sin</strong></a>(x, /)</dt><dd><tt>Return&nbsp;the&nbsp;sine&nbsp;of&nbsp;x&nbsp;(measured&nbsp;in&nbsp;radians).</tt></dd></dl>
+ <dl><dt><a name="-sqrt"><strong>sqrt</strong></a>(x, /)</dt><dd><tt>Return&nbsp;the&nbsp;square&nbsp;root&nbsp;of&nbsp;x.</tt></dd></dl>
+ <dl><dt><a name="-update_colliding_objects"><strong>update_colliding_objects</strong></a>(pair: (&lt;class 'int'&gt;, &lt;class 'int'&gt;), objects: list[object], deltat: float)</dt><dd><tt>input&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;pair&nbsp;:&nbsp;(int,&nbsp;int)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pair&nbsp;of&nbsp;object&nbsp;where&nbsp;a&nbsp;collision&nbsp;is&nbsp;detected<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;objects&nbsp;:&nbsp;list[object]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list&nbsp;of&nbsp;all&nbsp;object&nbsp;present&nbsp;in&nbsp;the&nbsp;simulation<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;deltat&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;deltat&nbsp;that&nbsp;should&nbsp;be&nbsp;used&nbsp;for&nbsp;the&nbsp;step<br>
+&nbsp;<br>
+&nbsp;<br>
+updates&nbsp;objects&nbsp;with&nbsp;a&nbsp;collision</tt></dd></dl>
+</td></tr></table>
+</body></html>

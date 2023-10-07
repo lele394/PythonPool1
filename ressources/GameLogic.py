@@ -105,8 +105,14 @@ def CreateMissile(self, vr, vt, projectile_type, ship, projectile, deltat):
 def GameruleCollisions(self, col_pairs, explosions_locations):
     for pair in col_pairs:
         print(pair)
-        a = self.projs[pair[0]]
-        b = self.projs[pair[1]]
+        # try statement here to avoid trying to run collision truth table on objects on grace
+        # especially since a pair on grace has no indices :)
+        try:
+            a = self.projs[pair[0]]
+            b = self.projs[pair[1]]
+        except:
+            return
+
 
         # ! GAME LOGIC ====================================================================
         # * please refer to GameSettings.py for the truthtable

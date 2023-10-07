@@ -1,6 +1,6 @@
 # import PhysicsEngine.physicalConstants as pc
 from .physicalConstants import *
-from math import *
+from math import sqrt
 from .collision import *
 
 
@@ -113,35 +113,44 @@ class object:
         self.WasColliding = []
 
     def UpdateVariables(self, last_deltat):
+        """updates all variable of the object"""
         self.r = self.r_list[-1]
         self.theta = self.theta_list[-1]
         self.vr = self.v_list[-1]
         self.vtheta = self.GetTheta_p(last_deltat)
 
     def Updatel0(self):
+        """update l0 of the object"""
         self.l0 = compute_l0(self.r, self.vtheta)
     
     def speed(self):
+        """return speed vector"""
         return (self.vr, self.vtheta)
     
     def speed_norm(self, deltat):
+        """return speed norm"""
         v = sqrt(self.v_list[-1]**2+self.r_list[-1]**2*self.GetTheta_p(deltat)**2)
         return v
 
     def position(self):
+        """return position vector"""
         return (self.r, self.theta)
     
     def GetR(self):
+        """return last r of r_list"""
         return self.r_list[-1]
 
     def GetTheta(self):
+        """return last theta of theta_list"""
         return self.theta_list[-1]
     
     def GetTheta_p(self, deltat):
+        """returns speed on theta using deltat"""
         if len(self.theta_list) == 1: return self.vtheta
         return (self.theta_list[-1] - self.theta_list[-2]) / deltat
     
     def Copy(self):
+        """return a new object with the same properties of this one"""
         obj = object( self.type,
                       self.r,
                       self.theta,
@@ -160,6 +169,7 @@ class object:
         return obj
     
     def Debug(self, deltat):
+        """debug informations for the object"""
         print( "\n==============================")
         print(f'debugging object {self}')
         print(f'object type {self.type}')

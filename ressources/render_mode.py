@@ -156,7 +156,7 @@ class App(moderngl_window.WindowConfig):
         self.fade_off = GS.fade_off
         self.color_distance_treshold = GS.color_distance_treshold
         """
-        carefull, background color is implemented in fade off, making it a shitty 
+        carefull, background color is implemented in fade off, making it a bad 
         idea as it does not have its own display shader. the distance between colors is 
         therefore *extremely* broken
         # todo custom background shader
@@ -252,7 +252,6 @@ class App(moderngl_window.WindowConfig):
 
         self.deltat = e.deltaless_deltat(self.projs) #initialize the deltat for the first run
 
-        # ^ just some cool colors that can be used in the simulation
         self.type_colors = GS.color_table
 
 
@@ -282,7 +281,7 @@ class App(moderngl_window.WindowConfig):
 
         #! simulation shennanigans =======================================
 
-        # * deltat shall not be calculated if its the 1st iteratio
+        # * deltat shall not be calculated if its the 1st iteration
         self.deltat = e.ComputeDeltatT(self.projs, self.deltat);
         # if self.iteration != 0: self.deltat = e.ComputeDeltatT(self.projs, self.deltat);
 
@@ -535,7 +534,7 @@ inp = input(" > ")
 
 
 # some stuff to do :
-#       ! ESCAPE VELOCITY COMPARISON IN OOB
+#       ! ESCAPE VELOCITY COMPARISON IN OOB # no time
 #   //    ! PROJECTILE LUNCH ANGLE
 #  //     ! PLAYER SET STARTING RADIUS AND VECTOR
 #     //well there's the thing about setting defult values to projectiles
@@ -543,7 +542,7 @@ inp = input(" > ")
 
 #    //DONE   s OUT OF BOUND IS NOT IMPLEMENTED YET 
 
-#     #~pretty well into that story telling and all, needa do the win texts
+#     //#~pretty well into that story telling and all, needa do the win texts
 
 #     todo also the damn copy paste of everything here as a console thingy
     # prob just gonna print the shit out of object.debug to the console
@@ -555,18 +554,30 @@ inp = input(" > ")
     # inelastic collisions and debris could be fun, but need to pass a radius
     # to the shader sooooooo...................
 
-    # todo testing if all exit conditions work? someone? hello?????
+    # todo testing if all exit conditions work? #out of time
 
-    # ayyyyyyyy polar reticle could be quite funny
+    # ayyyyyyyy polar reticle could be quite funny #i wishhhhh maybe in the weekend? shouldn't be too long
 
-    # todo check variables that can be put in the config file
+    #//check variables that can be put in the config file
 
-    # START REPORT???????
+    # //START REPORT??????? O:)
 
-    # ! strat.sh and setup
+    # ! start.sh and setup #bash if function for graphical or console mode once it's done
 
 
 
+
+
+
+
+
+
+
+
+
+
+# ! PART3 test stuff
+# ! CMD EDITION PLEAAAASE
 
 
 # moderngl_window.run_window_config(App)

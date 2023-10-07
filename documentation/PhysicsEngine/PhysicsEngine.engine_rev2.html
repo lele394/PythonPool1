@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module PhysicsEngine.engine_rev2</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="PhysicsEngine.html"><font color="#ffffff">PhysicsEngine</font></a>.engine_rev2</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/leo/Desktop/Northstar%20-%20stranded%20crew/ressources/PhysicsEngine/engine_rev2.py">/home/leo/Desktop/Northstar - stranded crew/ressources/PhysicsEngine/engine_rev2.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;import&nbsp;PhysicsEngine.physicalConstants&nbsp;as&nbsp;pc</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="PhysicsEngine.engine_rev2.html#object">object</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="object">class <strong>object</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#object">object</a>(tpe:&nbsp;str,&nbsp;r:&nbsp;float,&nbsp;theta:&nbsp;float,&nbsp;vr:&nbsp;float,&nbsp;vtheta:&nbsp;float,&nbsp;m:&nbsp;float,&nbsp;radius=0)<br>
+&nbsp;<br>
+<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="object-Copy"><strong>Copy</strong></a>(self)</dt><dd><tt>return&nbsp;a&nbsp;new&nbsp;<a href="#object">object</a>&nbsp;with&nbsp;the&nbsp;same&nbsp;properties&nbsp;of&nbsp;this&nbsp;one</tt></dd></dl>
+
+<dl><dt><a name="object-Debug"><strong>Debug</strong></a>(self, deltat)</dt><dd><tt>debug&nbsp;informations&nbsp;for&nbsp;the&nbsp;<a href="#object">object</a></tt></dd></dl>
+
+<dl><dt><a name="object-GetR"><strong>GetR</strong></a>(self)</dt><dd><tt>return&nbsp;last&nbsp;r&nbsp;of&nbsp;r_list</tt></dd></dl>
+
+<dl><dt><a name="object-GetTheta"><strong>GetTheta</strong></a>(self)</dt><dd><tt>return&nbsp;last&nbsp;theta&nbsp;of&nbsp;theta_list</tt></dd></dl>
+
+<dl><dt><a name="object-GetTheta_p"><strong>GetTheta_p</strong></a>(self, deltat)</dt><dd><tt>returns&nbsp;speed&nbsp;on&nbsp;theta&nbsp;using&nbsp;deltat</tt></dd></dl>
+
+<dl><dt><a name="object-UpdateVariables"><strong>UpdateVariables</strong></a>(self, last_deltat)</dt><dd><tt>updates&nbsp;all&nbsp;variable&nbsp;of&nbsp;the&nbsp;<a href="#object">object</a></tt></dd></dl>
+
+<dl><dt><a name="object-Updatel0"><strong>Updatel0</strong></a>(self)</dt><dd><tt>update&nbsp;l0&nbsp;of&nbsp;the&nbsp;<a href="#object">object</a></tt></dd></dl>
+
+<dl><dt><a name="object-__init__"><strong>__init__</strong></a>(self, tpe: str, r: float, theta: float, vr: float, vtheta: float, m: float, radius=0)</dt><dd><tt>creates&nbsp;an&nbsp;<a href="#object">object</a>&nbsp;class&nbsp;which&nbsp;represent&nbsp;a&nbsp;physical&nbsp;<a href="#object">object</a>&nbsp;in&nbsp;the&nbsp;simulation<br>
+has&nbsp;multiple&nbsp;functions&nbsp;attached&nbsp;to&nbsp;itself,&nbsp;namely&nbsp;:<br>
+&nbsp;<br>
+<a href="#object-UpdateVariables">UpdateVariables</a>(&nbsp;deltat&nbsp;)&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;:&nbsp;deltat&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;:&nbsp;/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;desc&nbsp;:&nbsp;updates&nbsp;r,&nbsp;theta,&nbsp;vr&nbsp;and&nbsp;vtheta&nbsp;from&nbsp;the&nbsp;list.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do&nbsp;not&nbsp;update&nbsp;l0&nbsp;as&nbsp;it&nbsp;is&nbsp;a&nbsp;movement&nbsp;constant<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;should&nbsp;only&nbsp;be&nbsp;updated&nbsp;when&nbsp;a&nbsp;collision&nbsp;occurs<br>
+&nbsp;<br>
+<a href="#object-speed_norm">speed_norm</a>(&nbsp;deltat&nbsp;)&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;:&nbsp;deltat&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;:&nbsp;float&nbsp;norm&nbsp;of&nbsp;the&nbsp;speed&nbsp;vector<br>
+&nbsp;&nbsp;&nbsp;&nbsp;desc&nbsp;:&nbsp;computes&nbsp;and&nbsp;returns&nbsp;the&nbsp;norm&nbsp;of&nbsp;the&nbsp;speed&nbsp;vector<br>
+&nbsp;<br>
+<a href="#object-GetTheta_p">GetTheta_p</a>(&nbsp;deltat&nbsp;)&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;:&nbsp;deltat&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;:&nbsp;float&nbsp;derivative&nbsp;of&nbsp;theta<br>
+&nbsp;&nbsp;&nbsp;&nbsp;desc&nbsp;:&nbsp;computes&nbsp;and&nbsp;returns&nbsp;the&nbsp;derivative&nbsp;of&nbsp;theta&nbsp;using<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;2&nbsp;last&nbsp;theta&nbsp;and&nbsp;a&nbsp;deltat&nbsp;specified&nbsp;by&nbsp;the&nbsp;user<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(usually&nbsp;used&nbsp;after&nbsp;computing&nbsp;last&nbsp;theta)<br>
+&nbsp;<br>
+<a href="#object-Copy">Copy</a>()&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;:&nbsp;new&nbsp;<a href="#object">object</a>&nbsp;with&nbsp;the&nbsp;same&nbsp;properties<br>
+&nbsp;<br>
+==============<br>
+Creation&nbsp;parameters&nbsp;:<br>
+--------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;r&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radius&nbsp;at&nbsp;which&nbsp;you&nbsp;wish&nbsp;the&nbsp;<a href="#object">object</a>&nbsp;to&nbsp;be&nbsp;from&nbsp;the&nbsp;center<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;theta&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;angle&nbsp;at&nbsp;which&nbsp;you&nbsp;wish&nbsp;the&nbsp;<a href="#object">object</a>&nbsp;to&nbsp;start&nbsp;from<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vr&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radial&nbsp;speed&nbsp;the&nbsp;<a href="#object">object</a>&nbsp;will&nbsp;have&nbsp;at&nbsp;the&nbsp;start<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vtheta&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;angular&nbsp;speed&nbsp;the&nbsp;<a href="#object">object</a>&nbsp;will&nbsp;have&nbsp;at&nbsp;the&nbsp;start<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;m&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mass&nbsp;of&nbsp;the&nbsp;projectile<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;radius&nbsp;:&nbsp;float&nbsp;(default&nbsp;0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radius&nbsp;of&nbsp;the&nbsp;<a href="#object">object</a><br>
+&nbsp;<br>
+&nbsp;<br>
+==============<br>
+Additional&nbsp;parameters&nbsp;:<br>
+--------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;l0&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;has&nbsp;to&nbsp;be&nbsp;assigned.&nbsp;movement&nbsp;constat&nbsp;used&nbsp;in&nbsp;integration<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Is&nbsp;initialised&nbsp;in&nbsp;the&nbsp;integrator&nbsp;by&nbsp;the&nbsp;program<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;r_list&nbsp;:&nbsp;list[float]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;contains&nbsp;all&nbsp;the&nbsp;r&nbsp;coordinates&nbsp;of&nbsp;the&nbsp;<a href="#object">object</a>&nbsp;at&nbsp;each&nbsp;steps<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;used&nbsp;by&nbsp;the&nbsp;program.&nbsp;use&nbsp;thoses&nbsp;to&nbsp;plot&nbsp;the&nbsp;position<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;theta_list&nbsp;:&nbsp;list[float]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;contains&nbsp;all&nbsp;the&nbsp;theta&nbsp;coordinates&nbsp;of&nbsp;the&nbsp;<a href="#object">object</a>&nbsp;at&nbsp;each&nbsp;steps<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;used&nbsp;by&nbsp;the&nbsp;program.&nbsp;use&nbsp;thoses&nbsp;to&nbsp;plot&nbsp;the&nbsp;position<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;v_list&nbsp;:&nbsp;list[float]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;contains&nbsp;all&nbsp;the&nbsp;r_p&nbsp;values&nbsp;of&nbsp;the&nbsp;<a href="#object">object</a>&nbsp;at&nbsp;each&nbsp;steps<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;used&nbsp;by&nbsp;the&nbsp;program.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;IsOut&nbsp;:&nbsp;bool<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;indicates&nbsp;if&nbsp;the&nbsp;<a href="#object">object</a>&nbsp;is&nbsp;considered&nbsp;"out"&nbsp;of&nbsp;the&nbsp;simulation<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aka&nbsp;it&nbsp;left&nbsp;the&nbsp;boundaires&nbsp;defined&nbsp;in&nbsp;the&nbsp;config&nbsp;file<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;InvulnerabilityTo&nbsp;:&nbsp;list[<a href="#object">object</a>]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not&nbsp;implemented</tt></dd></dl>
+
+<dl><dt><a name="object-position"><strong>position</strong></a>(self)</dt><dd><tt>return&nbsp;position&nbsp;vector</tt></dd></dl>
+
+<dl><dt><a name="object-speed"><strong>speed</strong></a>(self)</dt><dd><tt>return&nbsp;speed&nbsp;vector</tt></dd></dl>
+
+<dl><dt><a name="object-speed_norm"><strong>speed_norm</strong></a>(self, deltat)</dt><dd><tt>return&nbsp;speed&nbsp;norm</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-ComputeDeltatT"><strong>ComputeDeltatT</strong></a>(objects: list[PhysicsEngine.engine_rev2.object], prevdeltat: float)</dt><dd><tt>input&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;r&nbsp;:&nbsp;list[float]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list&nbsp;of&nbsp;all&nbsp;current&nbsp;r&nbsp;value&nbsp;for&nbsp;each&nbsp;objects<br>
+&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;:&nbsp;list[float]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list&nbsp;of&nbsp;all&nbsp;the&nbsp;current&nbsp;speed&nbsp;on&nbsp;r&nbsp;(rdot)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;theta&nbsp;:&nbsp;list[list[float]]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list<br>
+&nbsp;<br>
+return&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;new&nbsp;minimum&nbsp;deltat&nbsp;that&nbsp;can&nbsp;be&nbsp;used&nbsp;in&nbsp;the&nbsp;simulation</tt></dd></dl>
+ <dl><dt><a name="-acceleration"><strong>acceleration</strong></a>(m: float, r: float, l0: float)</dt><dd><tt>input:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;m&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mass&nbsp;of&nbsp;black&nbsp;hole<br>
+&nbsp;&nbsp;&nbsp;&nbsp;r&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;radius&nbsp;of&nbsp;the&nbsp;<a href="#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;l0&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;computed&nbsp;angular&nbsp;momentum<br>
+&nbsp;<br>
+return&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;acceleration</tt></dd></dl>
+ <dl><dt><a name="-clamp"><strong>clamp</strong></a>(num, min_value, max_value)</dt><dd><tt>clamp&nbsp;num&nbsp;between&nbsp;min&nbsp;and&nbsp;max</tt></dd></dl>
+ <dl><dt><a name="-collisions"><strong>collisions</strong></a>(objects: list[PhysicsEngine.engine_rev2.object], i: int, deltat: float, collision_iterations: list, col)</dt></dl>
+ <dl><dt><a name="-compute_l0"><strong>compute_l0</strong></a>(r, vtheta)</dt><dd><tt>input&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;r:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r&nbsp;component&nbsp;of&nbsp;the&nbsp;position<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vtheta&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;theta&nbsp;component&nbsp;of&nbsp;the&nbsp;speed</tt></dd></dl>
+ <dl><dt><a name="-cos"><strong>cos</strong></a>(x, /)</dt><dd><tt>Return&nbsp;the&nbsp;cosine&nbsp;of&nbsp;x&nbsp;(measured&nbsp;in&nbsp;radians).</tt></dd></dl>
+ <dl><dt><a name="-deltaless_deltat"><strong>deltaless_deltat</strong></a>(objects, override='')</dt><dd><tt>input:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;objects&nbsp;:&nbsp;list[<a href="#object">object</a>]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;all&nbsp;objects&nbsp;in&nbsp;the&nbsp;simulation<br>
+&nbsp;&nbsp;&nbsp;&nbsp;override&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allows&nbsp;to&nbsp;skip&nbsp;deltat&nbsp;computation&nbsp;and&nbsp;return&nbsp;a&nbsp;desired&nbsp;value&nbsp;as&nbsp;override<br>
+&nbsp;<br>
+return:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;deltat</tt></dd></dl>
+ <dl><dt><a name="-nbody_coupled_integrator"><strong>nbody_coupled_integrator</strong></a>(obj, blackhole, deltat)</dt><dd><tt>input&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;obj&nbsp;:&nbsp;<a href="#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#object">object</a>&nbsp;that&nbsp;simulation&nbsp;will&nbsp;be&nbsp;run&nbsp;on<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;blackhole&nbsp;:&nbsp;<a href="#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blackhole&nbsp;of&nbsp;the&nbsp;simulation,&nbsp;effectively,&nbsp;only&nbsp;the&nbsp;mss&nbsp;is&nbsp;required.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a&nbsp;simple&nbsp;<a href="#object">object</a>&nbsp;with&nbsp;only&nbsp;a&nbsp;.m&nbsp;property&nbsp;is&nbsp;required.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;deltat&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;deltat&nbsp;of&nbsp;the&nbsp;simulation&nbsp;step<br>
+&nbsp;<br>
+infos&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;function&nbsp;updates&nbsp;the&nbsp;<a href="#object">object</a>&nbsp;lists&nbsp;with&nbsp;the&nbsp;next&nbsp;step&nbsp;of&nbsp;the&nbsp;simulation<br>
+&nbsp;&nbsp;&nbsp;&nbsp;using&nbsp;the&nbsp;provided&nbsp;methods.</tt></dd></dl>
+ <dl><dt><a name="-rk_next"><strong>rk_next</strong></a>(rk: float, vk: float, deltat: float)</dt><dd><tt>input&nbsp;:<br>
+self&nbsp;explnatory<br>
+&nbsp;<br>
+return:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;rk+1&nbsp;for&nbsp;leapfrog</tt></dd></dl>
+ <dl><dt><a name="-sin"><strong>sin</strong></a>(x, /)</dt><dd><tt>Return&nbsp;the&nbsp;sine&nbsp;of&nbsp;x&nbsp;(measured&nbsp;in&nbsp;radians).</tt></dd></dl>
+ <dl><dt><a name="-sqrt"><strong>sqrt</strong></a>(x, /)</dt><dd><tt>Return&nbsp;the&nbsp;square&nbsp;root&nbsp;of&nbsp;x.</tt></dd></dl>
+ <dl><dt><a name="-theta_next"><strong>theta_next</strong></a>(theta: float, l0: float, rk: float, deltat: float) -&gt; float</dt><dd><tt>input&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;theta&nbsp;:&nbsp;initial&nbsp;theta<br>
+l0&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;calculated&nbsp;from&nbsp;the&nbsp;initial&nbsp;position<br>
+rk&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;donno<br>
+deltat&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;time&nbsp;delta&nbsp;between&nbsp;both&nbsp;steps<br>
+&nbsp;<br>
+&nbsp;<br>
+#//UPDATE&nbsp;RK&nbsp;TO&nbsp;THE&nbsp;ALGORITHM&nbsp;IN&nbsp;PDF</tt></dd></dl>
+ <dl><dt><a name="-vk_next"><strong>vk_next</strong></a>(vk: float, rk: float, mass: float, l0: float, deltat: float)</dt><dd><tt>input&nbsp;:<br>
+self&nbsp;explanatory<br>
+&nbsp;<br>
+return:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;vk+3/2&nbsp;for&nbsp;leafrog</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>G</strong> = 6.6743e-11<br>
+<strong>c</strong> = 299792458<br>
+<strong>conf_collisionGracePeriod</strong> = 0<br>
+<strong>conf_computeDeltaClamp</strong> = (0, 5)<br>
+<strong>conf_computeDeltaDeltatFactor</strong> = 1000<br>
+<strong>conf_debugCollisions</strong> = False<br>
+<strong>conf_outOfBoundMax</strong> = 100000<br>
+<strong>conf_outOfBoundMin</strong> = 1<br>
+<strong>conf_statusDebug</strong> = False<br>
+<strong>conf_statusPrintModulo</strong> = 100000<br>
+<strong>pi</strong> = 3.14159265359</td></tr></table>
+</body></html>

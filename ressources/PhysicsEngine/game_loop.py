@@ -46,7 +46,7 @@ def game_physics_loop(objects: list[object],
         objects_to_depop = []
 
 
-
+        #quit if no objects are in the simulation.
         if len(objects) == 0:
             break
             

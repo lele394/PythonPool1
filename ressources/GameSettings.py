@@ -3,18 +3,22 @@ steps_per_frame = 1 #please do not change or the time spent between
 
 out_of_bound = 40 # distance from the blackhole at which the ship is oncisdered out of bound
 
+# defines what a player starts with.
 starting_inventory = {
     "Heavy" : 5,
     "Light" : 5
 }
 
 
-
+# enables or disables periodic boundary conditons.
 periodic_boundary_condition_is_active = True
 
 
 # ======== COLOR TABLE ==========
-# https://keiwando.com/color-picker/
+# # https://keiwando.com/color-picker/
+# assigns a colorr to an object type. 
+# color names type are used for debug or if you wish
+# to use the simulation for other things. the renderer understands those colors
 color_table = {
             "red" : [1, 0, 0],
             "green": [0, 1, 0],
@@ -56,7 +60,7 @@ projectiles_default = {
 #still experimental but these values give a somehat good result
 background_color = [0.05, 0.13, 0.18]
 # background_color = [33/255, 33/255, 33/255]
-fade_off = 0.005
+fade_off = 0.03
 color_distance_treshold = 0.2
 # ^ will reimplement the background color, will have to do for now
 
