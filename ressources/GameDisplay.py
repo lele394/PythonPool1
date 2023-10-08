@@ -47,7 +47,7 @@ def GameMenu():
 
 def GameHowToPlay():
     clear_screen()
-    print("tIt's pretty easy, launch a game and see how it goes\ncheck the asociated paper if you need help\n")
+    print("It's pretty easy, launch a game and see how it goes\ncheck the asociated paper if you need help\nFor more help, check the report provided with the project,\na user's guide is provided in it.\n")
     input("Press enter to continue\n > ") 
 
 
