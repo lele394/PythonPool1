@@ -409,7 +409,7 @@ def nbody_coupled_integrator(obj, blackhole, deltat):
     obj.v_list.append( vk_next(obj.v_list[-1], obj.r_list[-1], blackhole.m, obj.l0, deltat) )
 
     # * stuff for theta 
-    obj.theta_list.append(theta_next(obj.theta_list[-1], obj.l0, obj.r_list[-1], deltat) % (2*pi))
+    obj.theta_list.append(theta_next(obj.theta_list[-1], obj.l0, obj.r_list[-1], deltat))
 
     # # ! debug
     # if obj.type == "Light" or obj.type == 'Ship':
