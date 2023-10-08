@@ -219,7 +219,7 @@ class App(moderngl_window.WindowConfig):
 
         # ! ================================
 
-        # todo change to include vars from GameSettings.py
+        # // change to include vars from GameSettings.py
         self.steps_per_frame = GS.steps_per_frame
 
         self.inventory = GS.starting_inventory
