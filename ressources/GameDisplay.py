@@ -61,7 +61,7 @@ def GameCredits():
                Project made by Leo Bechet
                CompuPhys  Master's degree
                UFR-ST Besancon  2023/2024
-                   github.com/lele394
+             github.com/lele394/PythonPool1
            
         Special Thanks to Adam Trigui for the help
                 on collisions equations.
