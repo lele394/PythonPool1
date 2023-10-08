@@ -1,0 +1,5 @@
+PyGLM==2.7.0
+matplotlib==3.8.0
+moderngl==5.8.2
+moderngl_window==2.4.4
+numpy==1.26.0
